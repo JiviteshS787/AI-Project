@@ -1,0 +1,21 @@
+{
+    "open chrome": {
+        "action": "open_app",
+        "value": "chrome"
+    },
+
+    "open calculator": {
+        "action": "open_app",
+        "value": "calculator"
+    },
+
+    "run hello": {
+        "action": "run_file",
+        "value": "hello"
+    },
+
+    "run hand-tracking": {
+        "action": "run_file",
+        "value": "hand-tracking"
+    }
+}
