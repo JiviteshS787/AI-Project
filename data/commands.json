@@ -10,12 +10,12 @@
     },
 
     "run hello": {
-        "action": "run_file",
+        "action": "run_project",
         "value": "hello"
     },
 
-    "run hand-tracking": {
-        "action": "run_file",
+    "start hand-tracking": {
+        "action": "run_project",
         "value": "hand-tracking"
     }
 }

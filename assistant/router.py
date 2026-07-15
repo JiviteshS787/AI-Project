@@ -1,4 +1,4 @@
-from assistant.tools import open_app, run_file
+from assistant.tools import open_app, run_project
 
 def execute(function): #function is a JSON obj, action and value are the attributes of said obj
     '''
@@ -9,8 +9,8 @@ def execute(function): #function is a JSON obj, action and value are the attribu
 
     if action == 'open_app':
         open_app(function["value"])
-    elif action == 'run_file':
-        run_file(function["value"])
+    elif action == 'run_project':
+        run_project(function["value"])
     else:
         print("Unknown action")
 

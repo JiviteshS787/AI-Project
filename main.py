@@ -15,7 +15,8 @@ execute(function_python)
 '''
 
 while True:
-    user_input = input("> ")
+    print("> ", end="", flush=True)
+    user_input = input().lower().strip()
 
     if user_input in functions:
         execute(functions[user_input])
