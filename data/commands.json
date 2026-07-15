@@ -10,7 +10,7 @@
     },
 
     "run hello": {
-        "action": "run_project",
+        "action": "run_script",
         "value": "hello"
     },
 
