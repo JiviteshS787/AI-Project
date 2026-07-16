@@ -9,6 +9,11 @@
         "value": "calculator"
     },
 
+    "open notion":{
+        "action": "open_app",
+        "value": "notion"
+    },
+
     "run hello": {
         "action": "run_script",
         "value": "hello"
@@ -18,4 +23,5 @@
         "action": "run_project",
         "value": "hand-tracking"
     }
+
 }

@@ -1,18 +1,9 @@
 import json
 from assistant.router import execute
+from difflib import get_close_matches
 
 with open("data/commands.json", "r") as file:
     functions = json.load(file) #Converts JSON to py dict
-
-'''
-function_chrome = functions["open chrome"]
-function_calculator = functions["open calculator"]
-function_python = functions["run hello"]
-
-execute(function_chrome)
-execute(function_calculator)
-execute(function_python)
-'''
 
 while True:
     print("> ", end="", flush=True)
@@ -20,5 +11,19 @@ while True:
 
     if user_input in functions:
         execute(functions[user_input])
+    if user_input == 'help':
+        # What commands are there to call?
+        print("Available commands:")
+        for cmd in functions.keys():
+            print(f"- {cmd}")
+    elif user_input == 'end':
+        break
     else:
-        print("Command not found")
+        matches = get_close_matches(user_input, functions.keys(), n=3, cutoff=0.6) #Checks for close matches of commands, not exact
+
+        if matches:
+            print("Command not found. Did you mean:")
+            for match in matches:
+                print(f"- {match}")
+        else:
+            print("Command not found")

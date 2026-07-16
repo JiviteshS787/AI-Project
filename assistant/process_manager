@@ -1,0 +1,35 @@
+import subprocess
+
+running_processes =  {}
+
+def start_process(name, command, cwd = None):
+    if name in running_processes:
+        print(f'{name} => already running')
+        return
+    
+    execute = subprocess.Popen(command, cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) #mostly for py projects that run in the background
+     
+    running_processes[name] = execute
+
+    print(f'{name} => started')
+
+def stop_process(name):
+    if name in running_processes:
+        stop = running_processes[name]
+        stop.terminate() #stop process
+
+        del running_processes[name]
+        
+        print(f'{name} => terminated')
+    else:
+        print(f'{name} => not running')
+
+def list_process():
+    if running_processes.length < 1:
+        print('No running processes')
+    else:
+        print("Running")
+        for name in running_processes.keys():
+            print(f'- {name}')
+
+
