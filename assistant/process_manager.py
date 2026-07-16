@@ -11,7 +11,7 @@ def start_process(name, command, cwd = None):
      
     running_processes[name] = execute
 
-    print(f'{name} => started')
+    print(f'{name} => started \n')
 
 def stop_process(name):
     if name in running_processes:
@@ -20,16 +20,17 @@ def stop_process(name):
 
         del running_processes[name]
         
-        print(f'{name} => terminated')
+        print(f'{name} => terminated \n')
     else:
-        print(f'{name} => not running')
+        print(f'{name} => not running \n')
 
 def list_process():
-    if running_processes.length < 1:
+    if len(running_processes) == 0:
         print('No running processes')
     else:
-        print("Running")
+        print(f"{len(running_processes)} processe(s) running:")
         for name in running_processes.keys():
             print(f'- {name}')
+        print("\n")
 
 

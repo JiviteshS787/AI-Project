@@ -14,6 +14,11 @@
         "value": "notion"
     },
 
+    "open vs": {
+        "action": "open_app",
+        "value": "VS"
+    },
+
     "run hello": {
         "action": "run_script",
         "value": "hello"
@@ -22,6 +27,15 @@
     "start hand-tracking": {
         "action": "run_project",
         "value": "hand-tracking"
+    },
+
+    "stop hand-tracking": {
+        "action": "stop_project",
+        "value": "hand-tracking"
+    },
+
+    "list running processes": {
+        "action": "list running processes"
     }
 
 }

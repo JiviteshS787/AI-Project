@@ -52,3 +52,11 @@ def run_project(project_name):
         #subprocess.Popen([python_path, file_path], cwd = working_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     else:
         print("Project not found")
+
+
+def stop_project(name):
+    stop_process(name)
+
+
+def list_running_projects():
+    list_process()
