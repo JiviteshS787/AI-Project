@@ -18,6 +18,7 @@ while True:
         print("Available commands:")
         for cmd in functions.keys():
             print(f"- {cmd}")
+        print("- end")
         print("\n")
 
     elif user_input == 'end':

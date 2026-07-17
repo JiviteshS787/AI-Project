@@ -16,7 +16,7 @@
 
     "open vs": {
         "action": "open_app",
-        "value": "VS"
+        "value": "visual studio"
     },
 
     "run hello": {
@@ -37,5 +37,4 @@
     "list running processes": {
         "action": "list running processes"
     }
-
 }
