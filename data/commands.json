@@ -1,40 +1,52 @@
 {
     "open chrome": {
         "action": "open_app",
-        "value": "chrome"
+        "target": "chrome",
+        "parameters": {}
+    },
+
+    "open avg": {
+        "action": "open_app",
+        "target": "avg",
+        "parameters": {}
     },
 
     "open calculator": {
         "action": "open_app",
-        "value": "calculator"
+        "target": "calculator",
+        "parameters": {}
     },
 
     "open notion":{
         "action": "open_app",
-        "value": "notion"
+        "target": "notion",
+        "parameters": {}
     },
 
     "open vs": {
         "action": "open_app",
-        "value": "visual studio"
+        "target": "visual studio",
+        "parameters": {}
     },
 
     "run hello": {
         "action": "run_script",
-        "value": "hello"
+        "target": "hello"
     },
 
     "start hand-tracking": {
         "action": "run_project",
-        "value": "hand-tracking"
+        "target": "hand-tracking",
+        "parameters": {}
     },
 
     "stop hand-tracking": {
         "action": "stop_project",
-        "value": "hand-tracking"
+        "target": "hand-tracking",
+        "parameters": {}
     },
 
     "list running processes": {
-        "action": "list running processes"
+        "action": "list_running_processes"
     }
 }

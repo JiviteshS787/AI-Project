@@ -1,5 +1,9 @@
 {
     "browser": "chrome",
+    "google": "chrome",
+    "google chrome": "chrome",
+    "calc": "calculator",
     "vscode": "visual studio",
-    "code": "visual studio"
+    "code": "visual studio",
+    "tracking": "hand-tracking"
 }

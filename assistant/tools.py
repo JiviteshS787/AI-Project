@@ -8,14 +8,21 @@ with open("data/apps.json") as file:
 with open("data/projects.json") as file:
     projects = json.load(file)
 
-def open_app(app_name):
+def open_app(app_name, parameters = None):
     '''
     Open an app
     '''
     if app_name in apps:
-        subprocess.Popen(apps[app_name], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
+
+        command = [apps[app_name]]
+
+        if parameters:
+            if "website" in parameters:
+                command.append(parameters["website"])
+
+        subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
     else:
-        print(f"Unknwon application: {app_name}")
+        print(f"Unknown application: {app_name}")
 
 
 def run_script(script_name):
@@ -35,7 +42,7 @@ def run_script(script_name):
         print("Project not found")
 
 
-def run_project(project_name):
+def run_project(project_name, parameters = "None"):
     '''
     Run python projects
     '''
@@ -54,7 +61,7 @@ def run_project(project_name):
         print("Project not found")
 
 
-def stop_project(name):
+def stop_project(name, parameters = "None"):
     stop_process(name)
 
 
