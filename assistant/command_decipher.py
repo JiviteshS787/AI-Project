@@ -11,9 +11,6 @@ with open("data/projects.json", "r") as file:
 with open("data/synonyms.json", "r") as file:
     synonyms = json.load(file) #Converts JSON to py dict
 
-with open("data/memory.json", "r") as file:
-    memory = json.load(file) #Converts JSON to py dict
-
 actions = {
         "open": "open_app",
         "launch": "open_app",
@@ -32,11 +29,21 @@ def find_parameters(words):
     if "with" in words:
         index = words.index("with")
         if index + 1 < len(words):
-            website = words[index+1]
+            websites = []
 
-            if "." not in website:
-                website += ".com"
-            parameters["website"] = website
+            params = words[index+1:]
+            
+            for website in params:
+                website = website.strip(",")
+
+                if website in ["and", "then"]:
+                    continue
+                
+                if "." not in website:
+                    website += ".com"
+                websites.append(website)
+
+            parameters["websites"] = websites
 
     return parameters
 
@@ -79,6 +86,49 @@ def return_command(action, target = None, parameters=None):
     }
 
 
+def split_commands(user_input):
+    words = user_input.lower().strip().split()
+
+    commands = []
+    current_command = []
+
+    for word in words:
+        #If action word found
+        if word in actions and current_command:
+            commands.append(" ".join(current_command))
+            current_command = []
+
+        #If no action word found, add word to current command
+        current_command.append(word)
+
+    if current_command:
+        commands.append(" ".join(current_command))
+
+    return commands
+    
+    '''
+    separators = [" and ", " then ", "," ]
+
+    commands = [user_input]
+
+    for separator in separators:
+        new_commands = []
+
+        for command in commands:
+            new_commands.extend(command.split(separator))
+
+        commands = new_commands
+
+    output = []
+
+    for command in commands:
+        if command.strip():
+            output.append(command.strip())
+
+    return output
+    '''
+
+
 def decipher(user_input):
     words = user_input.lower().split()
     memory = load_memory()
@@ -105,16 +155,21 @@ def decipher(user_input):
         if action == "open_app":
             app = find_match(words, index, apps, synonyms)
 
+            #If app name found
             if app:
                 return return_command("open_app", app, parameters)
-            if not app:
+            #If again -> run previous exactly, with new params if existing
+            if "again" in words and parameters and memory["last_app"]:
                 return return_command("open_app", memory["last_app"], parameters)
-            if "it" in words and memory["last_app"]:
-                return return_command("open_app", memory["last_app"], memory["app_params"])
-            if parameters and memory['last_app']:
-                return return_command("open_app", memory["last_app"], parameters)
+            #Regular again -> no new params
             if "again" in words and memory["last_app"]:
                 return return_command("open_app", memory["last_app"], memory["app_params"])
+            #If 'it' reference -> check memory
+            if "it" in words and memory["last_app"]:
+                return return_command("open_app", memory["last_app"], parameters)
+            #If no app name, use new parameters and old memory to open app
+            if parameters and memory['last_app']:
+                return return_command("open_app", memory["last_app"], parameters)
 
 
         elif action == "run_project":
@@ -138,8 +193,6 @@ def decipher(user_input):
                 return return_command("stop_project", memory["last_project"])
 
         elif action == "list_running_processes":
-            return return_command("list_running_processes"
-)
-
+            return return_command("list_running_processes")
 
     return None

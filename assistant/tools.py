@@ -17,8 +17,9 @@ def open_app(app_name, parameters = None):
         command = [apps[app_name]]
 
         if parameters:
-            if "website" in parameters:
-                command.append(parameters["website"])
+            if "websites" in parameters:
+                for website in parameters["websites"]:
+                    command.append(website)
 
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
     else:
@@ -42,7 +43,7 @@ def run_script(script_name):
         print("Project not found")
 
 
-def run_project(project_name, parameters = "None"):
+def run_project(project_name, parameters = None):
     '''
     Run python projects
     '''
@@ -61,7 +62,7 @@ def run_project(project_name, parameters = "None"):
         print("Project not found")
 
 
-def stop_project(name, parameters = "None"):
+def stop_project(name, parameters = None):
     stop_process(name)
 
 

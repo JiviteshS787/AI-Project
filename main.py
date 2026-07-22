@@ -1,7 +1,8 @@
 import json
-from assistant.router import execute
-from assistant.command_decipher import decipher
 from difflib import get_close_matches
+
+from assistant.router import execute
+from assistant.command_decipher import decipher, split_commands
 
 with open("data/commands.json", "r") as file:
     functions = json.load(file) #Converts JSON to py dict
@@ -25,19 +26,25 @@ while True:
         break
 
     else:
-        command = decipher(user_input)
+        #i = 1
+        commands = split_commands(user_input)
+        
+        for entry in commands:
+            command = decipher(entry)
+            #print(f"Command #{i}: {entry}")
+            #i+=1
 
-        if command:
-            execute(command)
-        else:
-            matches = get_close_matches(user_input, functions.keys(), n=3, cutoff=0.6) #Checks for close matches of commands, not exact
-
-            if matches:
-                print("Command not found. Did you mean:")
-                for match in matches:
-                    print(f"- {match}")
+            if command:
+                execute(command)
             else:
-                print("Command not found")
+                matches = get_close_matches(entry, functions.keys(), n=3, cutoff=0.6) #Checks for close matches of commands, not exact
+
+                if matches:
+                    print("Command not found. Did you mean:")
+                    for match in matches:
+                        print(f"- {match}")
+                else:
+                    print(f"Command not found: {entry}")
 
 
         
