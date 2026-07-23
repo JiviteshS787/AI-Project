@@ -28,7 +28,6 @@ while True:
     else:
         #i = 1
         commands = split_commands(user_input)
-        
         for entry in commands:
             command = decipher(entry)
             #print(f"Command #{i}: {entry}")

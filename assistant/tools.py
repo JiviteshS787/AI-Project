@@ -8,6 +8,9 @@ with open("data/apps.json") as file:
 with open("data/projects.json") as file:
     projects = json.load(file)
 
+with open("data/scripts.json", "r") as file:
+    scripts = json.load(file)
+
 def open_app(app_name, parameters = None):
     '''
     Open an app
@@ -22,28 +25,34 @@ def open_app(app_name, parameters = None):
                     command.append(website)
 
         subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
+
+        return True
     else:
         print(f"Unknown application: {app_name}")
+        return False
 
 
 def run_script(script_name):
     '''
     Run python files
     '''
-    if script_name in projects:
+    if script_name in scripts:
 
-        script = projects[script_name]
+        script = scripts[script_name]
 
         python_path = script["python"]
         file_path = script["file"]
         working_dir = os.path.dirname(file_path)
 
         subprocess.run([python_path, file_path], cwd = working_dir)
+
+        return True
     else:
-        print("Project not found")
+        print("Script not found")
+        return False
 
 
-def run_project(project_name, parameters = None):
+def start_project(project_name, parameters = None):
     '''
     Run python projects
     '''
@@ -58,12 +67,16 @@ def run_project(project_name, parameters = None):
         start_process(project_name, [python_path, file_path], cwd = working_dir)
 
         #subprocess.Popen([python_path, file_path], cwd = working_dir, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return True
     else:
         print("Project not found")
+        return False
 
 
 def stop_project(name, parameters = None):
-    stop_process(name)
+    if(stop_process(name)):
+        return True
+    return False
 
 
 def list_running_projects():

@@ -2,10 +2,5 @@
     "hand-tracking": {
         "python":"C:\\Users\\jivit\\Hand-Tracking\\HandTracking\\venv\\Scripts\\python.exe",
         "file": "C:\\Users\\jivit\\Hand-Tracking\\HandTracking\\Version6-WorkingCopy.py"
-    },
-
-    "hello": {
-        "python": "C:\\Users\\jivit\\AI_Project\\AI-Project\\venv\\Scripts\\python.exe",
-        "file": "C:\\Users\\jivit\\AI_Project\\AI-Project\\manual_testing\\hello.py"
     }
 }

@@ -5,6 +5,30 @@
         "parameters": {}
     },
 
+    "open file-explorer": {
+        "action": "open_app",
+        "target": "file-explorer",
+        "parameters": {}
+    },
+
+    "open notepad":{
+        "action": "open_app",
+        "target": "notepad",
+        "parameters": {}
+    },
+
+    "open onenote": {
+        "action": "open_app",
+        "target": "onenote",
+        "parameters": {}
+    },
+
+    "open outlook": {
+        "action": "open_app",
+        "target": "outlook",
+        "parameters": {}
+    },
+
     "open avg": {
         "action": "open_app",
         "target": "avg",
@@ -35,7 +59,7 @@
     },
 
     "start hand-tracking": {
-        "action": "run_project",
+        "action": "start_project",
         "target": "hand-tracking",
         "parameters": {}
     },
@@ -48,5 +72,13 @@
 
     "list running processes": {
         "action": "list_running_processes"
+    },
+
+    "clear history": {
+        "action": "delete_history"
+    },
+
+    "show history": {
+        "action": "show_history"
     }
 }

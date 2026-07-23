@@ -3,5 +3,9 @@
     "avg": "C:\\Program Files (x86)\\AVG\\Browser\\Application\\AVGBrowser.exe",
     "calculator": "calc.exe",
     "visual studio": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
-    "notion":"C:\\Users\\jivit\\AppData\\Local\\Programs\\Notion\\Notion.exe"
+    "notion":"C:\\Users\\jivit\\AppData\\Local\\Programs\\Notion\\Notion.exe",
+    "outlook": "C:\\Program Files\\WindowsApps\\Microsoft.OutlookForWindows_1.2026.421.500_x64__8wekyb3d8bbwe\\olk.exe",
+    "onenote": "C:\\Program Files\\Microsoft Office\\root\\Office16\\ONENOTE.EXE",
+    "notepad": "C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2605.34.0_x64__8wekyb3d8bbwe\\Notepad\\Notepad.exe",
+    "file-explorer": "C:\\Windows\\explorer.exe"
 }

@@ -1,7 +1,54 @@
 {
-    "last_app": "chrome",
-    "last_project": "hand-tracking",
-    "last_action": "open_app",
-    "app_params": {},
-    "project_params": {}
+    "history": [
+        {
+            "action": "open_app",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open_app",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open_app",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open_app",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open_app",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open_app",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open_app",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open_app",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open_app",
+            "target": "avg",
+            "parameters": {}
+        }
+    ],
+    "last_action": {
+        "action": "open_app",
+        "target": "avg",
+        "parameters": {}
+    }
 }

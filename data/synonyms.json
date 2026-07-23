@@ -5,5 +5,12 @@
     "calc": "calculator",
     "vscode": "visual studio",
     "code": "visual studio",
-    "tracking": "hand-tracking"
+    "tracking": "hand-tracking",
+    "mail": "outlook",
+    "1note": "onenote",
+    "notes": "onenote",
+    "pad": "notepad",
+    "fileexplorer": "file-explorer",
+    "explorer": "file-explorer",
+    "files": "file-explorer"
 }
