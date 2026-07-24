@@ -1,5 +1,6 @@
 import subprocess, json, os
 from assistant.process_manager import start_process, stop_process, list_process
+from assistant.app_manager import open_app as launch_app, close_app as terminate_app
 
 #Load in json files
 with open("data/apps.json") as file:
@@ -11,25 +12,39 @@ with open("data/projects.json") as file:
 with open("data/scripts.json", "r") as file:
     scripts = json.load(file)
 
-def open_app(app_name, parameters = None):
+
+def open_app(app_name, parameters=None):
     '''
     Open an app
     '''
     if app_name in apps:
 
-        command = [apps[app_name]]
+        command = [apps[app_name]["path"]]
 
         if parameters:
             if "websites" in parameters:
                 for website in parameters["websites"]:
                     command.append(website)
 
-        subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=subprocess.CREATE_NO_WINDOW)
+        return launch_app(command, app_name)
 
-        return True
     else:
         print(f"Unknown application: {app_name}")
         return False
+
+
+def close_app(app_name):
+    '''
+    Close an app
+    '''
+    if app_name in apps:
+        process_name = apps[app_name]["process"]
+
+        return terminate_app(process_name)
+
+
+    print(f"Unknown application: {app_name}")
+    return False
 
 
 def run_script(script_name):

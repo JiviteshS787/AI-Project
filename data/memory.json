@@ -1,54 +1,8 @@
 {
-    "history": [
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "avg",
-            "parameters": {}
-        }
-    ],
+    "history": [],
     "last_action": {
-        "action": "open_app",
-        "target": "avg",
+        "action": null,
+        "target": null,
         "parameters": {}
     }
 }

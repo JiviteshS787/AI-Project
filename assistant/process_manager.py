@@ -1,53 +1,89 @@
-import subprocess
+import subprocess, psutil
 
-running_processes =  {}
+running_processes = {}
 
-def start_process(name, command, cwd = None):
+
+def start_process(name, command, cwd=None):
+
     if name in running_processes:
-        print(f'{name} => already running')
-        return
-    
-    execute = subprocess.Popen(command, cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) #mostly for py projects that run in the background
-     
-    running_processes[name] = execute
+        print(f"{name} => already running")
+        return False
 
-    print(f'{name} => started \n')
+    process = subprocess.Popen(command, cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    pid = process.pid
+
+    print(f"{name} launcher PID: {pid}")
+
+    try:
+        parent = psutil.Process(pid)
+        # Give app time to spawn real process
+        parent.wait(timeout=0.5)
+
+    except:
+        pass
+
+    running_processes[name] = pid
+    print(f"{name} => started\n")
+    return True
 
 
 def stop_process(name):
-    if name in running_processes:
-        stop = running_processes[name]
-        stop.terminate() #stop process
+
+    if name not in running_processes:
+        print(f"{name} => not running\n")
+        return False
+
+    pid = running_processes[name]
+
+    try:
+        parent = psutil.Process(pid)
+        processes = [parent]
+        # Include children
+        processes += parent.children(recursive=True)
+
+
+        for process in processes:
+            try:
+                print(f"Killing {process.name()} {process.pid}")
+                process.kill()
+
+            except psutil.NoSuchProcess:
+                pass
 
         del running_processes[name]
-        
-        print(f'{name} => terminated \n')
-    else:
-        print(f'{name} => not running \n')
+        print(f"{name} => terminated\n")
+        return True
+
+
+    except psutil.NoSuchProcess:
+        del running_processes[name]
+        print(f"{name} => already closed\n")
+        return False
+
+
+    except psutil.AccessDenied:
+        print(f"{name} => permission denied\n")
+        return False
 
 
 def list_process():
 
-    # Remove processes that have ended
     finished = []
 
-    for name, process in running_processes.items():
-        if process.poll() is not None:
+    for name, pid in running_processes.items():
+        if not psutil.pid_exists(pid):
             finished.append(name)
 
     for name in finished:
         del running_processes[name]
 
-
-    if len(running_processes) == 0:
+    if not running_processes:
         print("No running processes")
 
     else:
         print(f"{len(running_processes)} process(es) running:")
 
-        for name in running_processes.keys():
+        for name in running_processes:
             print(f"- {name}")
-
-    print("\n")
-
-
+    print()

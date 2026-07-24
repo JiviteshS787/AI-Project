@@ -4,13 +4,16 @@
     "google chrome": "chrome",
     "calc": "calculator",
     "vscode": "visual studio",
+    "visual studio code": "visual studio",
     "code": "visual studio",
     "tracking": "hand-tracking",
     "mail": "outlook",
     "1note": "onenote",
+    "one note": "onenote",
     "notes": "onenote",
     "pad": "notepad",
-    "fileexplorer": "file-explorer",
+    "note pad": "notepad",
+    "file explorer": "file-explorer",
     "explorer": "file-explorer",
     "files": "file-explorer"
 }

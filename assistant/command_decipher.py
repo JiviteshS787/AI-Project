@@ -18,16 +18,30 @@ with open("data/scripts.json", "r") as file:
 actions = {
         "open": "open_app",
         "launch": "open_app",
+        "fire up": "open_app",
+
+        "close": "close_app",
+        "exit": "close_app",
+        "quit": "close_app",
+
         "start": "start_project",
-        "run": "run_script",
+        "boot": "start_project",
+
         "stop": "stop_project",
+        "terminate": "stop_project",
+
+        "run": "run_script",
+
         "list running processes": "list_running_processes",
         "list": "list_running_processes",
         "processes": "list_running_processes",
+        "list processes": "list_running_processes",
+
         "history": "show_history",
         "show history": "show_history",
+        "delete history": "delete_history",
         "delete": "delete_history",
-        "clear": "delete_history"
+        "clear": "delete_history",
     }
 
 
@@ -67,20 +81,20 @@ def find_target(words, action_length):
 
 
 def find_action(words):
-    for length in range(3, 0, -1):
+    for length in range(2, 0, -1):
         if length <= len(words):
             phrase = " ".join(words[:length])
 
             # Exact match first
             if phrase in actions:
-                #print(f"Exact match: {phrase}")
+                #print(f"Action found: {phrase}")
                 return actions[phrase], length
 
-    # Optional fuzzy matching
+    # Similar word matching
     match = get_close_matches(words[0], actions.keys(), n=1, cutoff=0.7)
 
     if match:
-        #print(f"Fuzzy match: {match[0]}")
+        #print(f"Similar match: {match[0]}")
         return actions[match[0]], 1
 
     return None, 0
@@ -90,20 +104,29 @@ def find_match(words, match_list, synonym_list):
     best_match = None
     best_score = 0
 
-    for i in range(1, len(words)+1):
-
+    # Try longer phrases first (IMPORTANT)
+    for i in range(len(words), 0, -1):
         phrase = " ".join(words[:i])
 
-        matches = get_close_matches(phrase, match_list.keys(), n=1, cutoff=0.6)
+        #Check app list
+        if phrase in match_list:
+            return phrase
 
+        #Check synonym list
+        if phrase in synonym_list:
+            #print(f"Synonym found: {phrase}")
+            return synonym_list[phrase]
+
+        #Close word matching in apps
+        matches = get_close_matches(phrase, match_list.keys(), n=1, cutoff=0.7)
         if matches:
             score = len(phrase)
             if score > best_score:
                 best_score = score
                 best_match = matches[0]
 
-        matches = get_close_matches(phrase, synonym_list.keys(), n=1, cutoff=0.6)
-
+        #Close word matching in synonyms
+        matches = get_close_matches(phrase, synonym_list.keys(), n=1, cutoff=0.7)
         if matches:
             score = len(phrase)
             if score > best_score:
@@ -187,6 +210,17 @@ def decipher(user_input):
         if parameters and last_open:
             return return_command("open_app", last_open["target"], parameters)
 
+    elif action == 'close_app':
+        app_target = find_target(words, action_index)
+        app = find_match(app_target, apps, synonyms)
+
+        if app:
+            return return_command("close_app", app, parameters)
+        '''else:
+            last_open = find_action_type("open_app")
+            if last_open:
+                return return_command("close_app", last_open["target"], last_open["parameters"])
+        '''
     elif action == "start_project":
 
         proj_target = find_target(words, action_index)

@@ -1,11 +1,38 @@
 {
-    "chrome": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
-    "avg": "C:\\Program Files (x86)\\AVG\\Browser\\Application\\AVGBrowser.exe",
-    "calculator": "calc.exe",
-    "visual studio": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
-    "notion":"C:\\Users\\jivit\\AppData\\Local\\Programs\\Notion\\Notion.exe",
-    "outlook": "C:\\Program Files\\WindowsApps\\Microsoft.OutlookForWindows_1.2026.421.500_x64__8wekyb3d8bbwe\\olk.exe",
-    "onenote": "C:\\Program Files\\Microsoft Office\\root\\Office16\\ONENOTE.EXE",
-    "notepad": "C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2605.34.0_x64__8wekyb3d8bbwe\\Notepad\\Notepad.exe",
-    "file-explorer": "C:\\Windows\\explorer.exe"
+    "chrome": {
+        "path": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+        "process": "chrome.exe"
+    },
+    "avg": {
+        "path": "C:\\Program Files (x86)\\AVG\\Browser\\Application\\AVGBrowser.exe",
+        "process": "AVGBrowser.exe"
+    },
+    "calculator": {
+        "path": "calc.exe",
+        "process": "CalculatorApp.exe"
+    },
+    "visual studio": {
+        "path": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
+        "process": "Code.exe"
+    },
+    "notion":{
+        "path": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Notion\\Notion.exe",
+        "process": "Notion.exe"
+    },
+    "outlook": {
+        "path": "C:\\Program Files\\WindowsApps\\Microsoft.OutlookForWindows_1.2026.421.500_x64__8wekyb3d8bbwe\\olk.exe",
+        "process": "olk.exe"
+    },
+    "onenote": {
+        "path": "C:\\Program Files\\Microsoft Office\\root\\Office16\\ONENOTE.EXE",
+        "process": "ONENOTE.EXE"
+    },
+    "notepad": {
+        "path":"C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2605.34.0_x64__8wekyb3d8bbwe\\Notepad\\Notepad.exe",
+        "process": "Notepad.exe"
+    },
+    "file-explorer": {
+        "path": "C:\\Windows\\explorer.exe",
+        "process": "explorer.exe"
+    }
 }
