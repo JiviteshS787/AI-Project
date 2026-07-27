@@ -30,11 +30,18 @@ while True:
         commands = split_commands(user_input)
         for entry in commands:
             command = decipher(entry)
-            #print(f"Command #{i}: {entry}")
+            #print(f"Command #{i}: {command}")
             #i+=1
-
+            
             if command:
-                execute(command)
+                if isinstance(command, list):
+                    for cmd in command:
+                        execute(cmd)
+
+                else:
+                    execute(command)
+
+                #execute(command)
             else:
                 matches = get_close_matches(entry, functions.keys(), n=3, cutoff=0.6) #Checks for close matches of commands, not exact
 
@@ -44,6 +51,7 @@ while True:
                         print(f"- {match}")
                 else:
                     print(f"Command not found: {entry}")
+            
 
 
         

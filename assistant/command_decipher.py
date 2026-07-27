@@ -71,6 +71,35 @@ def find_parameters(words):
     return parameters
 
 
+def find_targets(words, action_length):
+    targets = []
+    remaining = words[action_length:]
+
+    current = []
+    has_parameters = False
+
+    for word in remaining:
+
+        # Once "with" appears, everything after it is parameters
+        if word == "with":
+            has_parameters = True
+            current.append(word)
+            continue
+
+        # Split targets only before parameters start
+        if word in ["and", "then", ","] and not has_parameters:
+            if current:
+                targets.append(current)
+                current = []
+        else:
+            current.append(word)
+
+    if current:
+        targets.append(current)
+
+    return targets
+
+
 def find_target(words, action_length):
     if "with" in words:
         end = words.index("with")
@@ -80,10 +109,10 @@ def find_target(words, action_length):
     return words[action_length:end]
 
 
-def find_action(words):
-    for length in range(2, 0, -1):
-        if length <= len(words):
-            phrase = " ".join(words[:length])
+def find_action(words, index=0):
+    for length in range(3, 0, -1):
+        if index + length <= len(words):
+            phrase = " ".join(words[index:index+length])
 
             # Exact match first
             if phrase in actions:
@@ -91,7 +120,8 @@ def find_action(words):
                 return actions[phrase], length
 
     # Similar word matching
-    match = get_close_matches(words[0], actions.keys(), n=1, cutoff=0.7)
+    if index < len(words):
+        match = get_close_matches(words[index], actions.keys(), n=1, cutoff=0.7)
 
     if match:
         #print(f"Similar match: {match[0]}")
@@ -144,6 +174,7 @@ def return_command(action, target = None, parameters=None):
     }
 
 
+'''
 def split_commands(user_input):
     words = user_input.lower().strip().split()
 
@@ -163,7 +194,46 @@ def split_commands(user_input):
         commands.append(" ".join(current_command))
 
     return commands
-    
+'''
+
+
+def split_commands(user_input):
+    words = user_input.lower().strip().split()
+
+    commands = []
+    current = []
+
+    i = 0
+    while i < len(words):
+        word = words[i]
+
+        # Check if this position starts an action?
+        action_info = find_action(words, i)
+        if action_info[0] and current:
+            commands.append(" ".join(current))
+            current = []
+
+        elif word == ["and", "then", ","]:
+            # Look after "and"
+            next_action = find_action(words, i+1)
+            if next_action[0]:
+                commands.append(" ".join(current))
+                current = []
+                i += 1
+                continue
+
+            # Otherwise keep "and" as part of parameters
+            current.append(word)
+            i += 1
+            continue
+
+        current.append(word)
+        i += 1
+
+    if current:
+        commands.append(" ".join(current))
+    return commands
+
 
 def decipher(user_input):
     words = user_input.lower().split()
@@ -179,7 +249,7 @@ def decipher(user_input):
     if user_input.strip() == "again" and last:
         return return_command(last.get("action"), last.get("target"), last.get("parameters", {}))
 
-    action_info = find_action(words)
+    action_info = find_action(words,0)
 
     if not action_info:
         return None
@@ -188,11 +258,21 @@ def decipher(user_input):
     action_index = action_info[1]
 
     if action == "open_app":
-
-        app_target = find_target(words, action_index)
-        app = find_match(app_target, apps, synonyms)
+        app_targets = find_targets(words, action_index)
         
         last_open = find_action_type("open_app")
+
+        commands = []
+
+        for target in app_targets:
+            app = find_match(target, apps, synonyms)
+            
+            if app:
+                commands.append(return_command("open_app", app, parameters))
+                
+        if commands:
+            return commands
+        
 
         #If app name found
         if app:
@@ -252,6 +332,13 @@ def decipher(user_input):
     elif action == 'run_script':
         script_target = find_target(words, action_index)
         script = find_match(script_target, scripts, synonyms)
+        last_script = find_action_type("run_script")
+
+        if "again" in words and last_script:
+            return return_command("run_script", last_script["target"])
+        if "it" in words and last_script:
+            return return_command("run_script", last_script["target"])
+
 
         return return_command("run_script", script)
     
