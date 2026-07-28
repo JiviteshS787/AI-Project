@@ -2,7 +2,10 @@ import json
 from difflib import get_close_matches
 
 from assistant.router import execute
-from assistant.command_decipher import decipher, split_commands
+
+from assistant.command_decipher import decipher
+from assistant.command_parser import split_commands
+from assistant.confirmation import confirm_command
 
 with open("data/commands.json", "r") as file:
     functions = json.load(file) #Converts JSON to py dict
@@ -12,7 +15,10 @@ while True:
     user_input = input().lower().strip()
 
     if user_input in functions:
-        execute(functions[user_input])
+        if confirm_command(functions[user_input]):
+            execute(functions[user_input])
+        else:
+            print("Cancelled.\n")
 
     elif user_input == 'help':
         # What commands are there to call?
@@ -28,18 +34,22 @@ while True:
     else:
         #i = 1
         commands = split_commands(user_input)
+        print(commands)
         for entry in commands:
             command = decipher(entry)
             #print(f"Command #{i}: {command}")
             #i+=1
             
             if command:
-                if isinstance(command, list):
-                    for cmd in command:
-                        execute(cmd)
+                if confirm_command(command):
+                    if isinstance(command, list):
+                        for cmd in command:
+                            execute(cmd)
 
+                    else:
+                        execute(command)
                 else:
-                    execute(command)
+                    print("Cancelled.\n")
 
                 #execute(command)
             else:

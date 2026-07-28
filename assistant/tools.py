@@ -22,12 +22,13 @@ def open_app(app_name, parameters=None):
         command = [apps[app_name]["path"]]
 
         if parameters:
-            if "websites" in parameters:
-                for website in parameters["websites"]:
+            accepted = apps[app_name].get("accepted_parameters", {})
+
+            if accepted.get("websites", False):
+                for website in parameters.get("websites", []):
                     command.append(website)
 
         return launch_app(command, app_name)
-
     else:
         print(f"Unknown application: {app_name}")
         return False

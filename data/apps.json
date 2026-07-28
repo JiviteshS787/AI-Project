@@ -2,46 +2,50 @@
     "chrome": {
         "path": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
         "process": "chrome.exe",
-        "parameters": true
+        "accepted_parameters": {
+            "websites": true
+        }
     },
     "avg": {
         "path": "C:\\Program Files (x86)\\AVG\\Browser\\Application\\AVGBrowser.exe",
         "process": "AVGBrowser.exe",
-        "parameters": true
+        "accepted_parameters":{
+            "websites": true
+        }
     },
     "calculator": {
         "path": "calc.exe",
         "process": "CalculatorApp.exe",
-        "parameters": false
+        "accepted_parameters": {}
     },
     "visual studio": {
         "path": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
         "process": "Code.exe",
-        "parameters": false
+        "accepted_parameters": {}
     },
     "notion":{
         "path": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Notion\\Notion.exe",
         "process": "Notion.exe",
-        "parameters": false
+        "accepted_parameters": {}
     },
     "outlook": {
         "path": "C:\\Program Files\\WindowsApps\\Microsoft.OutlookForWindows_1.2026.421.500_x64__8wekyb3d8bbwe\\olk.exe",
         "process": "olk.exe",
-        "parameters": false
+        "accepted_parameters": {}
     },
     "onenote": {
         "path": "C:\\Program Files\\Microsoft Office\\root\\Office16\\ONENOTE.EXE",
         "process": "ONENOTE.EXE",
-        "parameters": false
+        "accepted_parameters": {}
     },
     "notepad": {
         "path":"C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2605.34.0_x64__8wekyb3d8bbwe\\Notepad\\Notepad.exe",
         "process": "Notepad.exe",
-        "parameters": false
+        "accepted_parameters": {}
     },
     "file-explorer": {
         "path": "C:\\Windows\\explorer.exe",
         "process": "explorer.exe",
-        "parameters": false
+        "accepted_parameters": {}
     }
 }

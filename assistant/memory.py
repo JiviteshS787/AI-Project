@@ -73,7 +73,6 @@ def show_history():
     print()
 
 
-
 #Delete history
 def delete_history():
     memory = load_memory()
