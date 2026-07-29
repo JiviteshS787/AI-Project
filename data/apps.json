@@ -1,5 +1,6 @@
 {
     "chrome": {
+        "type": "app",
         "path": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
         "process": "chrome.exe",
         "accepted_parameters": {
@@ -7,6 +8,7 @@
         }
     },
     "avg": {
+        "type": "app",
         "path": "C:\\Program Files (x86)\\AVG\\Browser\\Application\\AVGBrowser.exe",
         "process": "AVGBrowser.exe",
         "accepted_parameters":{
@@ -14,38 +16,51 @@
         }
     },
     "calculator": {
+        "type": "app",
         "path": "calc.exe",
         "process": "CalculatorApp.exe",
         "accepted_parameters": {}
     },
     "visual studio": {
+        "type": "app",
         "path": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
         "process": "Code.exe",
         "accepted_parameters": {}
     },
     "notion":{
+        "type": "app",
         "path": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Notion\\Notion.exe",
         "process": "Notion.exe",
         "accepted_parameters": {}
     },
     "outlook": {
+        "type": "app",
         "path": "C:\\Program Files\\WindowsApps\\Microsoft.OutlookForWindows_1.2026.421.500_x64__8wekyb3d8bbwe\\olk.exe",
         "process": "olk.exe",
         "accepted_parameters": {}
     },
     "onenote": {
+        "type": "app",
         "path": "C:\\Program Files\\Microsoft Office\\root\\Office16\\ONENOTE.EXE",
         "process": "ONENOTE.EXE",
         "accepted_parameters": {}
     },
     "notepad": {
+        "type": "app",
         "path":"C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2605.34.0_x64__8wekyb3d8bbwe\\Notepad\\Notepad.exe",
         "process": "Notepad.exe",
         "accepted_parameters": {}
     },
     "file-explorer": {
+        "type": "app",
         "path": "C:\\Windows\\explorer.exe",
         "process": "explorer.exe",
+        "accepted_parameters": {}
+    },
+    "settings": {
+        "type": "app",
+        "path": "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe",
+        "process": "SystemSettings.exe",
         "accepted_parameters": {}
     }
 }

@@ -2,9 +2,9 @@ from difflib import get_close_matches
 
 
 actions = {
-        "open": "open_app",
-        "launch": "open_app",
-        "fire up": "open_app",
+        "open": "open",
+        "launch": "open",
+        "fire up": "open",
 
         "close": "close_app",
         "exit": "close_app",

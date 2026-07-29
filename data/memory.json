@@ -1,6 +1,48 @@
 {
     "history": [
         {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {}
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {
+                "websites": [
+                    "youtube.com"
+                ]
+            }
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {
+                "websites": [
+                    "netflix.com"
+                ]
+            }
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {
+                "websites": [
+                    "youtube.com"
+                ]
+            }
+        },
+        {
+            "action": "open",
+            "target": "downloads",
+            "parameters": {}
+        },
+        {
             "action": "start_project",
             "target": "hand-tracking",
             "parameters": {}
@@ -9,116 +51,11 @@
             "action": "stop_project",
             "target": "hand-tracking",
             "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {
-                "websites": [
-                    "youtube.com"
-                ]
-            }
-        },
-        {
-            "action": "open_app",
-            "target": "avg",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {
-                "websites": [
-                    "netflix.com"
-                ]
-            }
-        },
-        {
-            "action": "open_app",
-            "target": "avg",
-            "parameters": {
-                "websites": [
-                    "netflix.com"
-                ]
-            }
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {
-                "websites": [
-                    "youtube.com"
-                ]
-            }
-        },
-        {
-            "action": "open_app",
-            "target": "avg",
-            "parameters": {
-                "websites": [
-                    "netflix.com"
-                ]
-            }
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {
-                "websites": [
-                    "youtube.com"
-                ]
-            }
-        },
-        {
-            "action": "open_app",
-            "target": "avg",
-            "parameters": {
-                "websites": [
-                    "youtube.com"
-                ]
-            }
-        },
-        {
-            "action": "open_app",
-            "target": "chrome",
-            "parameters": {
-                "websites": [
-                    "youtube.com"
-                ]
-            }
-        },
-        {
-            "action": "open_app",
-            "target": "notion",
-            "parameters": {}
-        },
-        {
-            "action": "open_app",
-            "target": "avg",
-            "parameters": {
-                "websites": [
-                    "youtube.com"
-                ]
-            }
         }
     ],
     "last_action": {
-        "action": "open_app",
-        "target": "avg",
-        "parameters": {
-            "websites": [
-                "youtube.com"
-            ]
-        }
+        "action": "stop_project",
+        "target": "hand-tracking",
+        "parameters": {}
     }
 }

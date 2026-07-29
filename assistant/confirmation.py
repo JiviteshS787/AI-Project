@@ -3,23 +3,64 @@ def format_command(command):
     target = command.get("target")
     parameters = command.get("parameters", {})
 
-    text = f"{action.replace('_', ' ')} {target}"
+    # Capitalize target nicely
+    target_text = target.title() if target else ""
 
-    if parameters:
+    if action == "open":
+        text = f"Opening {target_text}"
+
         if "websites" in parameters:
-            text += " with " + ", ".join(parameters["websites"])
+            sites = [
+                site.replace(".com", "").title()
+                for site in parameters["websites"]
+            ]
+            if parameters["websites"]:
+                text += " with " + ", ".join(sites)
 
-    return text
+        return text
+
+    if action == "close_app":
+        return f"Closing {target_text}"
+
+    if action == "start_project":
+        return f"Starting project {target_text}"
+
+    if action == "stop_project":
+        return f"Stopping project {target_text}"
+
+    if action == "run_script":
+        return f"Running script {target_text}"
+
+    if action == "list_running_processes":
+        return "Listing running processes"
+
+    if action == "show_history":
+        return "Showing history"
+
+    if action == "delete_history":
+        return "Deleting history"
+
+    return f"{action} {target_text}"
 
 def confirm_command(commands):
     if not isinstance(commands, list):
         commands = [commands]
 
-    print("\nConfirm:")
-    
-    for command in commands:
-        print("-", format_command(command))
+    print("\n=== Ready to Execute ===")
 
-    answer = input("> ").lower()
+    for i, command in enumerate(commands, 1):
+        print(f"{i}. {format_command(command)}")
 
-    return answer in ["yes", "y", "confirm"]
+    print("\nOptions: [y = yes | n = cancel]")
+
+    answer = input("> ").strip().lower()
+
+    if answer in ["y", "yes"]:
+        return True
+
+    if answer in ["n", "no", "cancel"]:
+        print("Cancelled.")
+        return False
+
+    print("Invalid input. Cancelled.")
+    return False

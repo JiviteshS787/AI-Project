@@ -33,27 +33,21 @@ while True:
 
     else:
         #i = 1
+        all_commands = []
         commands = split_commands(user_input)
-        print(commands)
+        #print(commands)
         for entry in commands:
             command = decipher(entry)
             #print(f"Command #{i}: {command}")
             #i+=1
-            
+
             if command:
-                if confirm_command(command):
-                    if isinstance(command, list):
-                        for cmd in command:
-                            execute(cmd)
-
-                    else:
-                        execute(command)
+                if isinstance(command, list):
+                    all_commands.extend(command)
                 else:
-                    print("Cancelled.\n")
-
-                #execute(command)
+                    all_commands.append(command)
             else:
-                matches = get_close_matches(entry, functions.keys(), n=3, cutoff=0.6) #Checks for close matches of commands, not exact
+                matches = get_close_matches(entry, functions.keys(), n=3, cutoff=0.6)
 
                 if matches:
                     print("Command not found. Did you mean:")
@@ -61,7 +55,13 @@ while True:
                         print(f"- {match}")
                 else:
                     print(f"Command not found: {entry}")
-            
+
+        #Confirm together
+        if all_commands:
+            if confirm_command(all_commands):
+                for cmd in all_commands:
+                    execute(cmd)
+
 
 
         

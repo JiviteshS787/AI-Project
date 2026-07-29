@@ -18,6 +18,16 @@ with open("data/synonyms.json", "r") as file:
 with open("data/scripts.json", "r") as file:
     scripts = json.load(file) #Converts JSON to py dict
 
+with open("data/files.json", "r") as file:
+    files = json.load(file)
+
+with open("data/file_synonyms.json", "r") as file:
+    file_synonyms = json.load(file)
+
+openables = {**apps, **files}
+
+openable_synonyms = {**synonyms, **file_synonyms}
+
 
 def filter_parameters(target, parameters, data):
     accepted = data[target].get("accepted_parameters", {})
@@ -27,6 +37,8 @@ def filter_parameters(target, parameters, data):
     for parameter, value in parameters.items():
         if accepted.get(parameter, False):
             filtered[parameter] = value
+        else:
+            print(f"Ignored unsupported parameter '{parameter}' for {target}")
 
     return filtered
 
@@ -64,15 +76,15 @@ def decipher(user_input):
         return None
     action = action_info[0]
     action_index = action_info[1]
-    print(f"Action: {action}, Action-index: {action_index}")
+    #print(f"Action: {action}, Action-index: {action_index}")
 
     #Type of action
-    if action == "open_app":
+    if action == "open":
         #Find the targeted apps, and their respective parameters
         app_targets = find_targets(words, action_index)
-
+        
         #Find the most recently opened APP
-        last_open = find_action_type("open_app")
+        last_open = find_action_type("open")
         if last_open:
             #Extract the app name from the returned output
             app = last_open["target"]
@@ -81,13 +93,21 @@ def decipher(user_input):
 
         #Fore each app in the command
         for target in app_targets:
-            #Find the actual app, ie check spelling get similar apps, basically confirm the app
-            app = find_match(target["target"], apps, synonyms)
+            #Find the app/file, ie check spelling get similar apps, basically confirm the app
+            item = find_match(target["target"], openables, openable_synonyms)
 
+            if not item:
+                print(f"Open target not found: {' '.join(target['target'])}")
+                continue
+            
             #Find the return parameters
-            app_parameters = filter_parameters(app, target["parameters"], apps)
+            parameters = {}
+
+            if openables[item]["type"] == "app":
+                parameters = filter_parameters(item, target["parameters"], openables)
+
             #Add to commands to execute
-            commands.append(return_command("open_app", app, app_parameters))
+            commands.append(return_command("open", item, parameters))
 
         #Execute the commands based on text present
         if commands and not ("again" in words or "it" in words):
@@ -95,18 +115,18 @@ def decipher(user_input):
 
         #Execute based on if 'again' or 'it' are in the command
         if "again" in words and parameters and last_open:
-            parameters = filter_parameters(app, parameters, apps)
-            return return_command("open_app", last_open["target"], parameters)
+            parameters = filter_parameters(last_open["target"], parameters, apps)
+            return return_command("open", last_open["target"], parameters)
         
         if "again" in words and last_open:
-            return return_command("open_app", last_open["target"], last_open["parameters"])
+            return return_command("open", last_open["target"], last_open["parameters"])
         
         if "it" in words and last_open:
-            return return_command("open_app", last_open["target"], last_open["parameters"])
+            return return_command("open", last_open["target"], last_open["parameters"])
         
-        if parameters and last_open:
-            parameters = filter_parameters(app, parameters, apps)
-            return return_command("open_app", last_open["target"], parameters)
+        if parameters and last_open and not app_targets:
+            parameters = filter_parameters(last_open["target"], parameters, apps)
+            return return_command("open", last_open["target"], parameters)
 
 
     elif action == 'close_app':

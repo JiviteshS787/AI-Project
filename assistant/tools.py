@@ -1,5 +1,5 @@
 import subprocess, json, os
-from assistant.process_manager import start_process, stop_process, list_process
+from assistant.process_manager import start_process, stop_process, list_running_processes
 from assistant.app_manager import open_app as launch_app, close_app as terminate_app
 
 #Load in json files
@@ -11,6 +11,36 @@ with open("data/projects.json") as file:
 
 with open("data/scripts.json", "r") as file:
     scripts = json.load(file)
+
+with open("data/files.json", "r") as file:
+    files = json.load(file)
+
+
+openables = {**apps, **files}
+
+
+def can_open_app(name):
+    return name in apps
+
+
+def can_open_file(name):
+    return name in files
+
+
+def open_file(file_name):
+    if file_name in files:
+        path = files[file_name]["path"]
+
+        try:
+            os.startfile(path)
+            return True
+
+        except Exception as e:
+            print(f"Failed to open {file_name}: {e}")
+            return False
+
+    print(f"Unknown file: {file_name}")
+    return False
 
 
 def open_app(app_name, parameters=None):
@@ -28,9 +58,36 @@ def open_app(app_name, parameters=None):
                 for website in parameters.get("websites", []):
                     command.append(website)
 
-        return launch_app(command, app_name)
+        success = launch_app(command, app_name)
+
+        if not success:
+            print(f"Failed to launch {app_name}")
+
+        return success
     else:
         print(f"Unknown application: {app_name}")
+        return False
+
+
+def open_item(name, parameters=None):
+    '''
+    Open anything (app/file)
+    '''
+
+    if name not in openables:
+        print(f"Cannot find {name}")
+        return False
+
+    item_type = openables[name]["type"]
+
+    if item_type == "app":
+        return open_app(name, parameters)
+
+    elif item_type == "file":
+        return open_file(name)
+
+    else:
+        print(f"Unknown open type: {item_type}")
         return False
 
 
@@ -95,5 +152,5 @@ def stop_project(name, parameters = None):
     return False
 
 
-def list_running_projects():
-    list_process()
+def list_processes():
+    list_running_processes()

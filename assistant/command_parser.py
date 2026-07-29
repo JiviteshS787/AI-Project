@@ -86,7 +86,7 @@ def find_targets(words, action_length):
     i = 0
     while i < len(remaining):
         word = remaining[i]
-        print(f"Word: {word}, i: {i}")
+        #print(f"Word: {word}, i: {i}")
 
         # Start parameters
         if word == "with":
@@ -103,7 +103,7 @@ def find_targets(words, action_length):
 
             #Could be an app instead of a website(if it is an app, do not try app_name.com/.ca)
             possible_app, length = app_position(remaining,i)
-            print(f"Length: {length}")
+            #print(f"Length: {length}")
 
             if possible_app:
                 extra_apps.append(possible_app)
@@ -136,7 +136,7 @@ def find_targets(words, action_length):
                 current.append(word)
         i += 1
 
-    print(f"Target: {targets}, Current: {current}, Websites: {websites}")
+    #print(f"Target: {targets}, Current: {current}, Websites: {websites}")
 
     if current:
         targets.append({"target": current,"parameters": {

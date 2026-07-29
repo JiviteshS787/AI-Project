@@ -1,0 +1,26 @@
+{
+    "downloads": "downloads",
+    "download folder": "downloads",
+    "download": "downloads",
+    "my downloads": "downloads",
+    "downloaded files": "downloads",
+
+    "documents": "documents",
+    "documents folder": "documents",
+    "docs": "documents",
+    "my documents": "documents",
+    "document folder": "documents",
+
+    "ai project": "ai-project",
+    "ai assistant": "ai-project",
+    "assistant project": "ai-project",
+    "assistant code": "ai-project",
+    "ai folder": "ai-project",
+
+    "hand tracker": "hand tracking",
+    "hand tracking project": "hand tracking",
+    "hand tracking code": "hand tracking",
+    "gesture tracking": "hand tracking",
+    "gesture project": "hand-tracking",
+    "tracking folder": "hand tracking"
+}
