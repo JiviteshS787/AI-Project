@@ -1,13 +1,23 @@
 import json
 
-from assistant.command_matcher import app_position
+from assistant.command_matcher import item_position
 from assistant.command_actions import find_action
 
 with open("data/apps.json", "r") as file:
-    apps = json.load(file) #Converts JSON to py dict
+    apps = json.load(file)
+
+with open("data/files.json", "r") as file:
+    files = json.load(file)
 
 with open("data/synonyms.json", "r") as file:
-    synonyms = json.load(file) #Converts JSON to py dict
+    synonyms = json.load(file)
+
+with open("data/file_synonyms.json", "r") as file:
+    file_synonyms = json.load(file)
+
+
+openables = {**apps, **files}
+openable_synonyms = {**synonyms, **file_synonyms}
 
 
 def find_parameters(words):
@@ -78,7 +88,7 @@ def find_targets(words, action_length):
     targets = []
     current = []
     websites = []
-    extra_apps = []
+    extra_items = []
 
     remaining = words[action_length:]
     has_parameters = False
@@ -102,11 +112,11 @@ def find_targets(words, action_length):
                 continue
 
             #Could be an app instead of a website(if it is an app, do not try app_name.com/.ca)
-            possible_app, length = app_position(remaining,i)
+            possible_item, length = item_position(remaining, i, openables, openable_synonyms)
             #print(f"Length: {length}")
 
-            if possible_app:
-                extra_apps.append(possible_app)
+            if possible_item:
+                extra_items.append(possible_item)
                 # save previous app
                 if current:
                     targets.append({"target": current,"parameters": {
@@ -119,7 +129,7 @@ def find_targets(words, action_length):
 
 
                 # start new app
-                current = possible_app.split()
+                current = possible_item.split()
                 websites = []
                 has_parameters = False
 
@@ -147,7 +157,7 @@ def find_targets(words, action_length):
             }
         })
 
-    if websites and not extra_apps:
+    if websites and not extra_items:
         websites = [
             site if "." in site else site + ".com"
             for site in websites

@@ -43,7 +43,7 @@ def filter_parameters(target, parameters, data):
     return filtered
 
 
-def return_command(action, target = None, parameters=None):
+def return_command(action, target=None, parameters=None):
     return{
         "action": action,
         "target": target,
@@ -59,7 +59,7 @@ def decipher(user_input):
     parameters = find_parameters(words)
 
     #Initialize
-    app = None
+    item = None
     project = None
 
     #Get most recent executes action, if any for it or again commands
@@ -68,7 +68,7 @@ def decipher(user_input):
 
     #If only again, repeat most recent action
     if user_input.strip() == "again" and last:
-        return return_command(last.get("action"), last.get("target"), last.get("parameters", {}))
+        return return_command(last.get("action"), last.get("target", None), last.get("parameters", {}))
 
     #Find the action word, and extract information from return output, PRINT ACTION
     action_info = find_action(words,0)
@@ -81,33 +81,36 @@ def decipher(user_input):
     #Type of action
     if action == "open":
         #Find the targeted apps, and their respective parameters
-        app_targets = find_targets(words, action_index)
+        item_targets = find_targets(words, action_index)
         
         #Find the most recently opened APP
         last_open = find_action_type("open")
         if last_open:
             #Extract the app name from the returned output
-            app = last_open["target"]
+            item = last_open["target"]
 
         commands = []
 
         #Fore each app in the command
-        for target in app_targets:
+        for target in item_targets:
             #Find the app/file, ie check spelling get similar apps, basically confirm the app
             item = find_match(target["target"], openables, openable_synonyms)
 
             if not item:
+                suggestion = find_match(target["target"], openables, openable_synonyms)
                 print(f"Open target not found: {' '.join(target['target'])}")
+                if suggestion:
+                    print(f"Did you mean: {suggestion}?")
                 continue
             
             #Find the return parameters
-            parameters = {}
+            item_parameters = {}
 
             if openables[item]["type"] == "app":
-                parameters = filter_parameters(item, target["parameters"], openables)
+                item_parameters = filter_parameters(item, target["parameters"], openables)
 
             #Add to commands to execute
-            commands.append(return_command("open", item, parameters))
+            commands.append(return_command("open", item, item_parameters))
 
         #Execute the commands based on text present
         if commands and not ("again" in words or "it" in words):
@@ -115,7 +118,7 @@ def decipher(user_input):
 
         #Execute based on if 'again' or 'it' are in the command
         if "again" in words and parameters and last_open:
-            parameters = filter_parameters(last_open["target"], parameters, apps)
+            parameters = filter_parameters(last_open["target"], parameters, openables)
             return return_command("open", last_open["target"], parameters)
         
         if "again" in words and last_open:
@@ -124,17 +127,27 @@ def decipher(user_input):
         if "it" in words and last_open:
             return return_command("open", last_open["target"], last_open["parameters"])
         
-        if parameters and last_open and not app_targets:
+        if parameters and last_open and not item_targets:
             parameters = filter_parameters(last_open["target"], parameters, apps)
             return return_command("open", last_open["target"], parameters)
 
 
-    elif action == 'close_app':
-        app_target = find_target(words, action_index)
-        app = find_match(app_target, apps, synonyms)
+    elif action == "close":
+        targets = find_targets(words, action_index)
 
-        if app:
-            return return_command("close_app", app)
+        commands = []
+
+        for target in targets:
+            item = find_match(target["target"], openables, openable_synonyms)
+
+            if not item:
+                print(f"Close target not found: {' '.join(target['target'])}")
+                continue
+
+            commands.append(return_command("close", item))
+
+        if commands:
+            return commands
 
 
     elif action == "start_project":

@@ -7,24 +7,28 @@ from assistant.command_decipher import decipher
 from assistant.command_parser import split_commands
 from assistant.confirmation import confirm_command
 
-with open("data/commands.json", "r") as file:
-    functions = json.load(file) #Converts JSON to py dict
+with open("data/apps.json", "r") as file:
+    apps = json.load(file)
+
+with open("data/files.json", "r") as file:
+    files = json.load(file)
+
+openables = {**apps, **files}
+
 
 while True:
     print("> ", end="", flush=True)
     user_input = input().lower().strip()
 
-    if user_input in functions:
-        if confirm_command(functions[user_input]):
-            execute(functions[user_input])
-        else:
-            print("Cancelled.\n")
-
-    elif user_input == 'help':
+    if user_input == 'help':
         # What commands are there to call?
         print("Available commands:")
-        for cmd in functions.keys():
-            print(f"- {cmd}")
+        print("- open <app/file>")
+        print("- close <app/file>")
+        print("- start <project>")
+        print("- stop <project>")
+        print("- run <script>")
+        print("- history")
         print("- end")
         print("\n")
 
@@ -47,7 +51,7 @@ while True:
                 else:
                     all_commands.append(command)
             else:
-                matches = get_close_matches(entry, functions.keys(), n=3, cutoff=0.6)
+                matches = get_close_matches(entry, list(openables.keys()), n=3, cutoff=0.6)
 
                 if matches:
                     print("Command not found. Did you mean:")
@@ -61,7 +65,20 @@ while True:
             if confirm_command(all_commands):
                 for cmd in all_commands:
                     execute(cmd)
+    
+    #print("\n")
 
 
+'''
+> open chrome with youtube, netflix and disney, claculator and documents
 
+=== Ready to Execute ===
+1. Opening Chrome with Youtube, Netflix, Disney, Claculator
+2. Opening Documents
+
+Add fuzzy spell check to possible_item check
+
+
+Check the spacing in displayed history, tweak how parameters are displayed
+'''
         

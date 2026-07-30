@@ -3,59 +3,50 @@
         {
             "action": "open",
             "target": "chrome",
-            "parameters": {}
+            "parameters": {},
+            "time": "2026-07-30 16:51:51"
         },
         {
             "action": "open",
-            "target": "chrome",
-            "parameters": {}
-        },
-        {
-            "action": "open",
-            "target": "chrome",
-            "parameters": {
-                "websites": [
-                    "youtube.com"
-                ]
-            }
+            "target": "notion",
+            "parameters": {},
+            "time": "2026-07-30 16:51:57"
         },
         {
             "action": "open",
             "target": "chrome",
             "parameters": {
                 "websites": [
-                    "netflix.com"
+                    "youtube.com",
+                    "netflix.com",
+                    "disney.com"
                 ]
-            }
+            },
+            "time": "2026-07-30 16:52:40"
         },
         {
             "action": "open",
-            "target": "chrome",
-            "parameters": {
-                "websites": [
-                    "youtube.com"
-                ]
-            }
+            "target": "calculator",
+            "parameters": {},
+            "time": "2026-07-30 16:52:40"
         },
         {
             "action": "open",
-            "target": "downloads",
-            "parameters": {}
+            "target": "documents",
+            "parameters": {},
+            "time": "2026-07-30 16:52:42"
         },
         {
-            "action": "start_project",
-            "target": "hand-tracking",
-            "parameters": {}
-        },
-        {
-            "action": "stop_project",
-            "target": "hand-tracking",
-            "parameters": {}
+            "action": "run_script",
+            "target": "hello",
+            "parameters": {},
+            "time": "2026-07-30 16:52:47"
         }
     ],
     "last_action": {
-        "action": "stop_project",
-        "target": "hand-tracking",
-        "parameters": {}
+        "action": "run_script",
+        "target": "hello",
+        "parameters": {},
+        "time": "2026-07-30 16:52:47"
     }
 }

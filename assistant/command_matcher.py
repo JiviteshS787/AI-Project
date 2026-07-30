@@ -3,19 +3,12 @@ import json
 from difflib import get_close_matches
 
 
-with open("data/apps.json", "r") as file:
-    apps = json.load(file) #Converts JSON to py dict
-
-with open("data/synonyms.json", "r") as file:
-    synonyms = json.load(file) #Converts JSON to py dict
-
-
-def app_position(words, index):
+def item_position(words, index, item_list, synonym_list):
     for length in range(len(words)-index, 0, -1):
 
         possible = words[index:index+length]
         
-        app = check_name(possible, apps, synonyms)
+        app = check_name(possible, item_list, synonym_list)
         if(index == 4):
             print(f"Possible app: {possible}, Length: {length}, App: {app}")
 

@@ -1,4 +1,4 @@
-from assistant.tools import can_open_app, can_open_file, open_item, close_app, start_project, run_script, stop_project, list_processes
+from assistant.tools import open_item, start_project, run_script, stop_project, list_processes, close_item
 from assistant.memory import update_history, show_history, delete_history
 
 def execute(function): #function is a JSON obj, action and target are the attributes of said obj
@@ -14,13 +14,11 @@ def execute(function): #function is a JSON obj, action and target are the attrib
         if opened:
             update_history(function)
 
-    elif action =='close_app':
-        close = close_app(function["target"])
+    elif action == "close":
+        close = close_item(function["target"])
 
-        #Update with app closed
         if close:
             update_history(function)
-
 
     elif action == 'start_project':
         run = start_project(function["target"], function.get("parameters"))

@@ -6,9 +6,9 @@ actions = {
         "launch": "open",
         "fire up": "open",
 
-        "close": "close_app",
-        "exit": "close_app",
-        "quit": "close_app",
+        "close": "close",
+        "exit": "close",
+        "quit": "close",
 
         "start": "start_project",
         "boot": "start_project",

@@ -1,4 +1,5 @@
-import subprocess, json, os
+import subprocess, json, os, pygetwindow as gw
+
 from assistant.process_manager import start_process, stop_process, list_running_processes
 from assistant.app_manager import open_app as launch_app, close_app as terminate_app
 
@@ -19,13 +20,6 @@ with open("data/files.json", "r") as file:
 openables = {**apps, **files}
 
 
-def can_open_app(name):
-    return name in apps
-
-
-def can_open_file(name):
-    return name in files
-
 
 def open_file(file_name):
     if file_name in files:
@@ -33,6 +27,7 @@ def open_file(file_name):
 
         try:
             os.startfile(path)
+            print(f"{file_name} => opened. \n")
             return True
 
         except Exception as e:
@@ -91,6 +86,25 @@ def open_item(name, parameters=None):
         return False
 
 
+def close_item(name):
+
+    if name not in openables:
+        print(f"Cannot find {name}")
+        return False
+
+    item_type = openables[name]["type"]
+
+    if item_type == "app":
+        return close_app(name)
+
+    elif item_type == "file":
+        return close_file(name)
+
+    else:
+        print(f"Unknown close type: {item_type}")
+        return False
+    
+
 def close_app(app_name):
     '''
     Close an app
@@ -103,6 +117,36 @@ def close_app(app_name):
 
     print(f"Unknown application: {app_name}")
     return False
+
+
+def close_file(file_name):
+    if file_name not in files:
+        print(f"Unknown file: {file_name}")
+        return False
+
+    path = files[file_name]["path"]
+    folder_name = path.split("\\")[-1].lower()
+
+    closed = False
+
+    windows = gw.getAllTitles()
+
+    for title in windows:
+        if folder_name in title.lower():
+            try:
+                win = gw.getWindowsWithTitle(title)[0]
+                win.close()
+                print(f"Closed {title}")
+                closed = True
+            except:
+                pass
+
+    if not closed:
+        print(f"No open window found for {file_name}\n")
+        return False
+
+    print()
+    return True
 
 
 def run_script(script_name):

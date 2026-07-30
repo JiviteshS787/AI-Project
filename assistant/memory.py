@@ -1,6 +1,19 @@
 import json
 
+from datetime import datetime
+
 memory_file = "data/memory.json"
+
+past_actions = {
+    "open": "Opened",
+    "close": "Closed",
+    "start_project": "Started",
+    "stop_project": "Stopped",
+    "run_script": "Ran",
+    "list_running_processes": "Listed running processes",
+    "show_history": "Viewed history",
+    "delete_history": "Deleted history"
+}
 
 #Load in anything in the memory, if unable to read return None for both entries.
 def load_memory():
@@ -13,7 +26,8 @@ def load_memory():
             "last_action": {
                 "action": None,
                 "target": None,
-                "parameters": {}
+                "parameters": {},
+                "time": None
             }
         }
 
@@ -25,6 +39,21 @@ def update_history(command):
 
     if "history" not in memory:
         memory["history"] = []
+
+
+    #Start addition
+    # Normalize command
+    command["parameters"] = command.get("parameters") or {}
+
+    #Timestamp
+    command["time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    # Remove empty website lists
+    if "websites" in command["parameters"]:
+        if not command["parameters"]["websites"]:
+            del command["parameters"]["websites"]
+    #End addition
+
 
     #Add command to history
     memory["history"].append(command)
@@ -58,18 +87,30 @@ def find_action_type(action_type):
 
 #Show history
 def show_history():
+
     memory = load_memory()
 
-    history = memory.get("history", [])
-
-    if not history:
+    if "history" not in memory or not memory["history"]:
         print("No history found")
         return
 
-    print("\nRecent Commands:")
+    print("\n=== Command History ===")
 
-    for entry in reversed(history):
-        print(f"Action: {entry.get('action')}; Target: {entry.get('target')}; Parameters: {entry.get('parameters')}")
+    for command in memory["history"]:
+
+        time = command.get("time", "")
+        time = time[11:16]   # only HH:MM
+
+        action = past_actions.get(command["action"], command["action"])
+
+        print(f"{time} - {action} {command['target']}")
+
+        parameters = command.get("parameters", {})
+
+        if parameters:
+            for key, value in parameters.items():
+                print(f"   {key}: {value}")
+
     print()
 
 
@@ -82,7 +123,8 @@ def delete_history():
     memory["last_action"] = {
         "action": None,
         "target": None,
-        "parameters": {}
+        "parameters": {},
+        "time": None
     }
 
     save_memory(memory)
