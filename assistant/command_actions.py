@@ -19,15 +19,25 @@ actions = {
         "run": "run_script",
 
         "list running processes": "list_running_processes",
-        "list": "list_running_processes",
-        "processes": "list_running_processes",
         "list processes": "list_running_processes",
 
         "history": "show_history",
         "show history": "show_history",
         "delete history": "delete_history",
-        "delete": "delete_history",
         "clear": "delete_history",
+
+        "remember": "create_alias",
+        "create alias": "create_alias",
+        "alias": "create_alias",
+
+        "forget": "delete_alias",
+        "delete alias": "delete_alias",
+        "remove alias": "delete_alias",
+        "delete": "delete_alias",
+
+        "list aliases": "list_aliases",
+        "aliases": "list_aliases",
+        "show aliases": "list_aliases"
     }
 
 def find_action(words, index=0):
@@ -37,7 +47,7 @@ def find_action(words, index=0):
 
             # Exact match first
             if phrase in actions:
-                #print(f"Action found: {phrase}")
+                #print(f"Action found: {phrase}, Length: {length}")
                 return actions[phrase], length
 
     # Similar word matching

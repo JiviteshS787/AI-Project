@@ -1,0 +1,134 @@
+{
+    "history": [
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-07-30 16:51:51"
+        },
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {},
+            "time": "2026-07-30 16:51:57"
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {
+                "websites": [
+                    "youtube.com",
+                    "netflix.com",
+                    "disney.com"
+                ]
+            },
+            "time": "2026-07-30 16:52:40"
+        },
+        {
+            "action": "open",
+            "target": "calculator",
+            "parameters": {},
+            "time": "2026-07-30 16:52:40"
+        },
+        {
+            "action": "open",
+            "target": "documents",
+            "parameters": {},
+            "time": "2026-07-30 16:52:42"
+        },
+        {
+            "action": "run_script",
+            "target": "hello",
+            "parameters": {},
+            "time": "2026-07-30 16:52:47"
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {
+                "websites": [
+                    "claude.com"
+                ]
+            },
+            "time": "2026-07-31 13:38:04"
+        },
+        {
+            "action": "open",
+            "target": "outlook",
+            "parameters": {},
+            "time": "2026-07-31 16:13:57"
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-07-31 16:55:10"
+        },
+        {
+            "action": "open",
+            "target": "documents",
+            "parameters": {},
+            "time": "2026-07-31 16:55:11"
+        },
+        {
+            "action": "close",
+            "target": "documents",
+            "parameters": {},
+            "time": "2026-07-31 16:55:21"
+        },
+        {
+            "action": "create_alias",
+            "target": "habits",
+            "parameters": {
+                "alias_for": "notion"
+            },
+            "time": "2026-07-31 17:00:43"
+        },
+        {
+            "action": "delete_alias",
+            "target": "mailing",
+            "parameters": {},
+            "time": "2026-07-31 17:14:10"
+        },
+        {
+            "action": "create_alias",
+            "target": "habits",
+            "parameters": {
+                "alias_for": "notion"
+            },
+            "time": "2026-07-31 18:58:08"
+        },
+        {
+            "action": "create_alias",
+            "target": "tasks",
+            "parameters": {
+                "alias_for": "notion"
+            },
+            "time": "2026-07-31 18:58:08"
+        },
+        {
+            "action": "create_alias",
+            "target": "school",
+            "parameters": {
+                "alias_for": "chrome"
+            },
+            "time": "2026-07-31 18:58:08"
+        },
+        {
+            "action": "create_alias",
+            "target": "uni",
+            "parameters": {
+                "alias_for": "chrome"
+            },
+            "time": "2026-07-31 18:58:08"
+        }
+    ],
+    "last_action": {
+        "action": "create_alias",
+        "target": "uni",
+        "parameters": {
+            "alias_for": "chrome"
+        },
+        "time": "2026-07-31 18:58:08"
+    }
+}

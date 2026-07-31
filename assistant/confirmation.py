@@ -1,46 +1,55 @@
+confirmations = {
+    "open": "Opening",
+    "close": "Closing",
+    "start_project": "Starting project",
+    "stop_project": "Stopping project",
+    "run_script": "Running script",
+    "list_running_processes": "Listed running processes",
+    "show_history": "Showing history",
+    "delete_history": "Clearing history",
+    "delete_alias": "Deleting alias",
+    "create_alias": "Creating alias",
+    "list_aliases": "Listing aliases"
+}
+
+
 def format_command(command):
-    action = command["action"]
-    target = command.get("target")
+    action = command.get("action")
+    target = command.get("target", "")
     parameters = command.get("parameters", {})
 
-    # Capitalize target nicely
     target_text = target.title() if target else ""
 
-    if action == "open":
-        text = f"Opening {target_text}"
+    # Get the action phrase
+    action_text = confirmations.get(action, action)
 
-        if "websites" in parameters:
+    # Open with websites
+    if action == "open":
+        text = f"{action_text} {target_text}"
+        websites = parameters.get("websites", [])
+
+        if websites:
             sites = [
                 site.replace(".com", "").title()
-                for site in parameters["websites"]
+                for site in websites
             ]
-            if parameters["websites"]:
-                text += " with " + ", ".join(sites)
+            text += " with " + ", ".join(sites)
 
         return text
 
-    if action == "close_app":
-        return f"Closing {target_text}"
+    if action in ["create_alias", "delete_alias"]:
+        alias_target = parameters.get("alias_for", "")
+        alias_target = alias_target.title()
 
-    if action == "start_project":
-        return f"Starting project {target_text}"
+        return f"{action_text} {target_text} -> {alias_target}"
 
-    if action == "stop_project":
-        return f"Stopping project {target_text}"
+    # Actions with no target
+    if not target:
+        return action_text
 
-    if action == "run_script":
-        return f"Running script {target_text}"
+    # Default formatting
+    return f"{action_text} {target_text}"
 
-    if action == "list_running_processes":
-        return "Listing running processes"
-
-    if action == "show_history":
-        return "Showing history"
-
-    if action == "delete_history":
-        return "Deleting history"
-
-    return f"{action} {target_text}"
 
 def confirm_command(commands):
     if not isinstance(commands, list):

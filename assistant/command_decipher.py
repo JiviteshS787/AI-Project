@@ -1,16 +1,19 @@
 import json
 
-from assistant.memory import find_action_type, load_memory
+from assistant.history import find_action_type, load_history
 
 from assistant.command_actions import find_action
 from assistant.command_matcher import find_match
-from assistant.command_parser import find_target, find_targets, find_parameters
+from assistant.command_parser import find_target, find_targets, find_parameters, find_aliases
+from assistant.alias_manager import load_aliases
+
+#Convert JSONs to py dicts
 
 with open("data/apps.json", "r") as file:
-    apps = json.load(file) #Converts JSON to py dict
+    apps = json.load(file)
 
 with open("data/projects.json", "r") as file:
-    projects = json.load(file) #Converts JSON to py dict
+    projects = json.load(file)
 
 with open("data/synonyms.json", "r") as file:
     synonyms = json.load(file) #Converts JSON to py dict
@@ -24,9 +27,9 @@ with open("data/files.json", "r") as file:
 with open("data/file_synonyms.json", "r") as file:
     file_synonyms = json.load(file)
 
+#Combine known app and file names
 openables = {**apps, **files}
-
-openable_synonyms = {**synonyms, **file_synonyms}
+open_synonyms = {**synonyms, **file_synonyms}
 
 
 def filter_parameters(target, parameters, data):
@@ -53,7 +56,13 @@ def return_command(action, target=None, parameters=None):
 
 def decipher(user_input):
     words = user_input.lower().replace(",", " , ").split()
-    memory = load_memory()
+
+    aliases = load_aliases()
+
+    #Combine know app and file synonyms with aliases
+    openable_synonyms = {**synonyms, **file_synonyms, **aliases}
+
+    history = load_history()
 
     # Find parameters (for later, might not need)
     parameters = find_parameters(words)
@@ -63,7 +72,7 @@ def decipher(user_input):
     project = None
 
     #Get most recent executes action, if any for it or again commands
-    last = memory.get("last_action")
+    last = history.get("last_action")
 
 
     #If only again, repeat most recent action
@@ -76,9 +85,12 @@ def decipher(user_input):
         return None
     action = action_info[0]
     action_index = action_info[1]
-    #print(f"Action: {action}, Action-index: {action_index}")
+    print(f"Action: {action}, Action-index: {action_index}")
 
-    #Type of action
+
+    #######################################
+    #    Open and Close Apps and Files    #
+    #######################################
     if action == "open":
         #Find the targeted apps, and their respective parameters
         item_targets = find_targets(words, action_index)
@@ -131,25 +143,66 @@ def decipher(user_input):
             parameters = filter_parameters(last_open["target"], parameters, apps)
             return return_command("open", last_open["target"], parameters)
 
-
     elif action == "close":
-        targets = find_targets(words, action_index)
+            targets = find_targets(words, action_index)
+            commands = []
+    
+            for target in targets:
+                item = find_match(target["target"], openables, openable_synonyms)
+    
+                if not item:
+                    print(f"Close target not found: {' '.join(target['target'])}")
+                    continue
+    
+                commands.append(return_command("close", item))
+    
+            if commands:
+                return commands
 
-        commands = []
 
-        for target in targets:
-            item = find_match(target["target"], openables, openable_synonyms)
+    #######################################
+    #      Create and Delete Aliases      #
+    #######################################
+    elif action == "create_alias":
+        alias_commands = []
 
-            if not item:
-                print(f"Close target not found: {' '.join(target['target'])}")
+        aliases_to_create = find_aliases(words, action_index)
+        #print(f"Aliases identified: {aliases_to_create}")
+
+        for alias in aliases_to_create:
+
+            target_item = find_match(alias["target"].split(), openables, open_synonyms)
+
+            if not target_item:
+                print(f"Cannot create alias. Target not found: {alias['target']}")
                 continue
 
-            commands.append(return_command("close", item))
+            alias_commands.append(return_command("create_alias",
+                    alias["alias"],
+                    {
+                        "alias_for": target_item
+                    }
+                )
+            )
 
-        if commands:
-            return commands
+        if alias_commands:
+            return alias_commands
+
+    elif action == "delete_alias":
+        alias = find_target(words, action_index)
+
+        if not alias:
+            print("Delete format: delete <alias>")
+            return None
+
+        alias_name = " ".join(alias)
+
+        return return_command("delete_alias", alias_name)
 
 
+    #######################################
+    #       Start and Stop Projects       #
+    #######################################
     elif action == "start_project":
         proj_target = find_target(words, action_index)
         project = find_match(proj_target, projects, synonyms)
@@ -162,7 +215,6 @@ def decipher(user_input):
             return return_command("start_project", last_run["target"], last_run["parameters"])
         if "again" in words and last_run:
             return return_command("start_project", last_run["target"], last_run["parameters"])
-
 
     elif action == "stop_project":
         stop_target = find_target(words, action_index)
@@ -178,6 +230,9 @@ def decipher(user_input):
             return return_command("stop_project", last_stop["target"])
 
 
+    #######################################
+    #             Run Scripts             #
+    #######################################
     elif action == 'run_script':
         script_target = find_target(words, action_index)
         script = find_match(script_target, scripts, synonyms)
@@ -192,13 +247,24 @@ def decipher(user_input):
         return return_command("run_script", script, {})
 
 
+    #######################################
+    #       Show and Delete History       #
+    #######################################
+    elif action == 'show_history':
+            return return_command("show_history")
+    
+    elif action == 'delete_history':
+        return return_command("delete_history")
+
+
+    #######################################
+    #              Listing                #
+    #######################################
     elif action == "list_running_processes":
         return return_command("list_running_processes")
 
-    elif action == 'show_history':
-        return return_command("show_history")
-
-    elif action == 'delete_history':
-        return return_command("delete_history")
+    elif action == "list_aliases":
+        return return_command("list_aliases")
+    
 
     return None

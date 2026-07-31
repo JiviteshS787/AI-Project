@@ -28,6 +28,8 @@ while True:
         print("- start <project>")
         print("- stop <project>")
         print("- run <script>")
+        print("- create alias <alias name> means <app/file>")
+        print("- delete alias <alias name>")
         print("- history")
         print("- end")
         print("\n")
@@ -68,17 +70,4 @@ while True:
     
     #print("\n")
 
-
-'''
-> open chrome with youtube, netflix and disney, claculator and documents
-
-=== Ready to Execute ===
-1. Opening Chrome with Youtube, Netflix, Disney, Claculator
-2. Opening Documents
-
-Add fuzzy spell check to possible_item check
-
-
-Check the spacing in displayed history, tweak how parameters are displayed
-'''
         

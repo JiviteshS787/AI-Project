@@ -2,7 +2,7 @@ import json
 
 from datetime import datetime
 
-memory_file = "data/memory.json"
+history_file = "data/history.json"
 
 past_actions = {
     "open": "Opened",
@@ -12,13 +12,15 @@ past_actions = {
     "run_script": "Ran",
     "list_running_processes": "Listed running processes",
     "show_history": "Viewed history",
-    "delete_history": "Deleted history"
+    "delete_history": "Cleared history",
+    "delete_alias": "Deleted Alias",
+    "create_alias": "Creates Alias"
 }
 
 #Load in anything in the memory, if unable to read return None for both entries.
-def load_memory():
+def load_history():
     try:
-        with open(memory_file, "r") as file: #Open with intent to read JSON
+        with open(history_file, "r") as file: #Open with intent to read JSON
             return json.load(file)
     except:
         return {
@@ -35,10 +37,10 @@ def load_memory():
 #Update history
 def update_history(command):
     #Load in memory
-    memory = load_memory()
+    history = load_history()
 
-    if "history" not in memory:
-        memory["history"] = []
+    if "history" not in history:
+        history["history"] = []
 
 
     #Start addition
@@ -56,29 +58,29 @@ def update_history(command):
 
 
     #Add command to history
-    memory["history"].append(command)
+    history["history"].append(command)
 
-    if len(memory["history"]) > 20:
+    if len(history["history"]) > 20:
         #forget some things if too many stored
-        memory["history"].pop(0)
+        history["history"].pop(0)
 
     #Update most recent action
-    memory["last_action"] = command
+    history["last_action"] = command
 
     #Save new memory
-    save_memory(memory)
+    save_history(history)
 
 
 #Find action with matching type
 def find_action_type(action_type):
-    memory = load_memory()
+    history = load_history()
 
-    last = memory.get("last_action")
+    last = history.get("last_action")
 
     if last and last.get("action") == action_type:
         return last
 
-    for entry in reversed(memory.get("history", [])): #if History doesn't exist return an empty list
+    for entry in reversed(history.get("history", [])): #if History doesn't exist return an empty list
         if entry and entry.get('action') == action_type:
             return entry
 
@@ -87,50 +89,68 @@ def find_action_type(action_type):
 
 #Show history
 def show_history():
+    history = load_history()
 
-    memory = load_memory()
-
-    if "history" not in memory or not memory["history"]:
+    if "history" not in history or not history["history"]:
         print("No history found")
         return
 
     print("\n=== Command History ===")
 
-    for command in memory["history"]:
+    current_date = None
 
-        time = command.get("time", "")
-        time = time[11:16]   # only HH:MM
+    for command in history["history"]:
 
-        action = past_actions.get(command["action"], command["action"])
+        timestamp = command.get("time", "")
 
-        print(f"{time} - {action} {command['target']}")
+        if timestamp:
+            date = timestamp[:10]
+            time = timestamp[11:16]
+        else:
+            date = "Unknown Date"
+            time = ""
+
+        # New date header
+        if date != current_date:
+            current_date = date
+            print(f"\n{date}")
+            print("-" * len(date))
+
+        action = past_actions.get(command.get("action"),  command.get("action"))
+
+        target = command.get("target", "")
+
+        print(f"{time} - {action} {target}")
 
         parameters = command.get("parameters", {})
 
         if parameters:
             for key, value in parameters.items():
-                print(f"   {key}: {value}")
-
+                # Format website lists nicely
+                if key == "websites":
+                    print(f"       Websites: {', '.join(value)}")
+                else:
+                    print(f"       {key.capitalize()}: {value}")
     print()
 
 
 #Delete history
 def delete_history():
-    memory = load_memory()
+    history = load_history()
 
-    memory["history"] = []
+    history["history"] = []
 
-    memory["last_action"] = {
+    history["last_action"] = {
         "action": None,
         "target": None,
         "parameters": {},
         "time": None
     }
 
-    save_memory(memory)
+    save_history(history)
 
 
 #Write to memory JSON
-def save_memory(memory_data):
-    with open(memory_file, "w") as file: #Open with intent to write to JSON
-        json.dump(memory_data, file, indent=4) #4 lines of writing
+def save_history(history_data):
+    with open(history_file, "w") as file: #Open with intent to write to JSON
+        json.dump(history_data, file, indent=4) #4 lines of writing

@@ -15,9 +15,77 @@ with open("data/synonyms.json", "r") as file:
 with open("data/file_synonyms.json", "r") as file:
     file_synonyms = json.load(file)
 
-
 openables = {**apps, **files}
 openable_synonyms = {**synonyms, **file_synonyms}
+
+
+#Finding multiple aliases
+def find_aliases(words, action_length):
+    remaining = words[action_length:]
+    groups = []
+    current = []
+
+    i = 0
+    while i < len(remaining):
+        word = remaining[i]
+        current.append(word)
+
+        if word == "means":
+            # Find the target AFTER "means"
+            target_item, length = item_position(remaining, i+1, openables, openable_synonyms)
+
+            if target_item:
+                current.extend(target_item.split())
+
+                groups.append(current)
+                current = []
+                i += (length + 1)
+                continue
+        i += 1
+
+    if current:
+        groups.append(current)
+
+    aliases = []
+    for group in groups:
+        if "means" not in group:
+            continue
+
+        means_index = group.index("means")
+
+        alias_words = group[:means_index]
+        target_words = group[means_index+1:]
+
+        # Resolve target properly
+        target_item, _ = item_position(target_words, 0, openables, openable_synonyms)
+
+        if not target_item:
+            #print(f"Alias target not found: {' '.join(target_words)}")
+            continue
+
+        # Split aliases by AND / comma
+        current_alias = []
+        alias_list = []
+
+        for word in alias_words:
+            if word in ["and", ","]:
+                if current_alias:
+                    alias_list.append(" ".join(current_alias))
+                    current_alias = []
+            else:
+                current_alias.append(word)
+
+        if current_alias:
+            alias_list.append(" ".join(current_alias))
+
+        # Build alias dicts
+        for alias in alias_list:
+            aliases.append({
+                "alias": alias,
+                "target": target_item
+            })
+
+    return aliases
 
 
 def find_parameters(words):
@@ -48,6 +116,7 @@ def find_parameters(words):
 
 def split_commands(user_input):
     words = user_input.lower().replace(",", " , ").split()
+    #print(f"Words: {words}")
 
     commands = []
     current = []
@@ -59,8 +128,12 @@ def split_commands(user_input):
         # Check if this position starts an action?
         action_info = find_action(words, i)
         if action_info[0] and current:
-            commands.append(" ".join(current))
-            current = []
+            previous_action = find_action(words, 0)
+
+            # Ignore the original action
+            if action_info[0] != previous_action[0]:
+                commands.append(" ".join(current))
+                current = []
 
         elif word in ["and", "then", ","]:
             # Look after "and"
@@ -81,6 +154,7 @@ def split_commands(user_input):
 
     if current:
         commands.append(" ".join(current))
+
     return commands
 
 
@@ -113,7 +187,7 @@ def find_targets(words, action_length):
 
             #Could be an app instead of a website(if it is an app, do not try app_name.com/.ca)
             possible_item, length = item_position(remaining, i, openables, openable_synonyms)
-            #print(f"Length: {length}")
+            #print(f"Item: {possible_item}, Length: {length}")
 
             if possible_item:
                 extra_items.append(possible_item)
