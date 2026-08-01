@@ -1,5 +1,8 @@
 import json
 
+from assistant.tools import projects, scripts
+
+
 alias_file = "data/aliases.json"
 
 
@@ -7,7 +10,26 @@ alias_file = "data/aliases.json"
 def load_aliases():
     try:
         with open(alias_file, "r") as file:
-            return json.load(file)
+            aliases = json.load(file)
+
+            normalized = {}
+            for alias, value in aliases.items():
+                if isinstance(value, str):
+                    item = value.lower().strip()
+                    action = "open"
+                    if item in scripts:
+                        action = "run_script"
+                    elif item in projects:
+                        action = "start_project"
+
+                    normalized[alias] = [{
+                        "action": action,
+                        "target": value,
+                        "parameters": {}
+                    }]
+                else:
+                    normalized[alias] = value
+            return normalized
 
     except:
         return {}
@@ -22,13 +44,30 @@ def save_aliases(aliases):
 #Create new alias
 def create_alias(alias, target):
     aliases = load_aliases()
+    item = target.lower().strip()
 
-    aliases[alias] = target
+    action = "open"
+    if item in projects:
+        action = "start_project"
+    elif item in scripts:
+        action = "run_script"
+
+    new_command = {
+        "action": action,
+        "target": target,
+        "parameters": {}
+    }
+
+    if alias in aliases:
+        # Prevent duplicates
+        if new_command not in aliases[alias]:
+            aliases[alias].append(new_command)
+    else:
+        aliases[alias] = [new_command]
 
     save_aliases(aliases)
 
     print(f"Alias created: {alias} -> {target}")
-
     return True
 
 

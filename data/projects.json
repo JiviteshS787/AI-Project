@@ -1,5 +1,6 @@
 {
     "hand-tracking": {
+        "type": "project",
         "python":"C:\\Users\\jivit\\Hand-Tracking\\HandTracking\\venv\\Scripts\\python.exe",
         "file": "C:\\Users\\jivit\\Hand-Tracking\\HandTracking\\Version6-WorkingCopy.py"
     }

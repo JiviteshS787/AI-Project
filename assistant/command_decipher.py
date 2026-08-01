@@ -54,15 +54,27 @@ def return_command(action, target=None, parameters=None):
     }
 
 
+def check_alias(words):
+    phrase = " ".join(words).lower()
+    
+    aliases = load_aliases()
+
+    if phrase in aliases:
+        return aliases[phrase]
+
+    return None
+
+
 def decipher(user_input):
     words = user_input.lower().replace(",", " , ").split()
 
     aliases = load_aliases()
 
-    #Combine know app and file synonyms with aliases
-    openable_synonyms = {**synonyms, **file_synonyms, **aliases}
-
     history = load_history()
+
+    alias_command = check_alias(words, aliases)
+    if alias_command:
+        return alias_command
 
     # Find parameters (for later, might not need)
     parameters = find_parameters(words)
@@ -105,11 +117,18 @@ def decipher(user_input):
 
         #Fore each app in the command
         for target in item_targets:
+            #Check if alias in command
+            alias_command = check_alias(target["target"], aliases)
+
+            if alias_command:
+                commands.extend(alias_command)
+                continue
+
             #Find the app/file, ie check spelling get similar apps, basically confirm the app
-            item = find_match(target["target"], openables, openable_synonyms)
+            item = find_match(target["target"], openables, open_synonyms)
 
             if not item:
-                suggestion = find_match(target["target"], openables, openable_synonyms)
+                suggestion = find_match(target["target"], openables, open_synonyms)
                 print(f"Open target not found: {' '.join(target['target'])}")
                 if suggestion:
                     print(f"Did you mean: {suggestion}?")
@@ -148,7 +167,7 @@ def decipher(user_input):
             commands = []
     
             for target in targets:
-                item = find_match(target["target"], openables, openable_synonyms)
+                item = find_match(target["target"], openables, open_synonyms)
     
                 if not item:
                     print(f"Close target not found: {' '.join(target['target'])}")
@@ -205,6 +224,11 @@ def decipher(user_input):
     #######################################
     elif action == "start_project":
         proj_target = find_target(words, action_index)
+
+        alias_command = check_alias(proj_target, aliases)
+        if alias_command:
+            return alias_command
+
         project = find_match(proj_target, projects, synonyms)
 
         last_run = find_action_type("start_project")
@@ -235,6 +259,11 @@ def decipher(user_input):
     #######################################
     elif action == 'run_script':
         script_target = find_target(words, action_index)
+
+        alias_command = check_alias(script_target, aliases)
+        if alias_command:
+            return alias_command
+
         script = find_match(script_target, scripts, synonyms)
 
         last_script = find_action_type("run_script")
