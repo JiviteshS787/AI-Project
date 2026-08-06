@@ -7,6 +7,7 @@ from assistant.command_decipher import decipher
 from assistant.command_parser import split_commands
 from assistant.confirmation import confirm_command
 
+
 with open("data/apps.json", "r") as file:
     apps = json.load(file)
 
@@ -14,7 +15,6 @@ with open("data/files.json", "r") as file:
     files = json.load(file)
 
 openables = {**apps, **files}
-
 
 while True:
     print("> ", end="", flush=True)

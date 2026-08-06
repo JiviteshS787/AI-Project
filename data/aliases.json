@@ -1,6 +1,28 @@
 {
-    "habits": "notion",
-    "tasks": "notion",
-    "school": "chrome",
-    "uni": "chrome"
+    "habits": [
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {}
+        }
+    ],
+    "tasks": [
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {}
+        }
+    ],
+    "school": [
+        {
+            "action": "open",
+            "target": "outlook",
+            "parameters": {}
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {}
+        }
+    ]
 }

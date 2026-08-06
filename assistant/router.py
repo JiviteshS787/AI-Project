@@ -1,5 +1,5 @@
 from assistant.tools import open_item, start_project, run_script, stop_project, list_processes, close_item
-from assistant.alias_manager import create_alias, delete_alias, list_aliases
+from assistant.alias_manager import create_alias, delete_alias, list_aliases, delete_all_aliases
 from assistant.history import update_history, show_history, delete_history
 
 def execute(function): #function is a JSON obj, action and target are the attributes of said obj
@@ -34,6 +34,12 @@ def execute(function): #function is a JSON obj, action and target are the attrib
         deleted = delete_alias(function["target"])
 
         if deleted:
+            update_history(function)
+
+    elif action == 'delete_all_aliases':
+        cleared = delete_all_aliases()
+
+        if cleared:
             update_history(function)
 
     elif action == 'start_project':

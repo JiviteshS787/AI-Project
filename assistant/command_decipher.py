@@ -5,7 +5,7 @@ from assistant.history import find_action_type, load_history
 from assistant.command_actions import find_action
 from assistant.command_matcher import find_match
 from assistant.command_parser import find_target, find_targets, find_parameters, find_aliases
-from assistant.alias_manager import load_aliases
+from assistant.alias_manager import load_aliases, valid_alias_name
 
 #Convert JSONs to py dicts
 
@@ -31,6 +31,12 @@ with open("data/file_synonyms.json", "r") as file:
 openables = {**apps, **files}
 open_synonyms = {**synonyms, **file_synonyms}
 
+#Inverse commands
+inverse_actions = {
+    "open": "close",
+    "start_project": "stop_project"
+}
+
 
 def filter_parameters(target, parameters, data):
     accepted = data[target].get("accepted_parameters", {})
@@ -54,25 +60,48 @@ def return_command(action, target=None, parameters=None):
     }
 
 
-def check_alias(words):
-    phrase = " ".join(words).lower()
-    
+def check_alias(words, inverse=False):
+    phrase = " ".join(words).lower().strip()
     aliases = load_aliases()
 
-    if phrase in aliases:
-        return aliases[phrase]
+    if phrase not in aliases:
+        return None
+    commands = aliases[phrase]
 
-    return None
+    if inverse:
+        return invert_commands(commands)
+
+    return commands
+
+
+def invert_commands(commands):
+    inverse = []
+
+    for command in commands:
+        action = command["action"]
+        inverse_action = inverse_actions.get(action)
+
+        #No inverse found
+        if not inverse_action:
+            print(f"No inverse action for {action}")
+            continue
+        inverse.append({
+            "action": inverse_action,
+            "target": command["target"],
+            "parameters": command.get("parameters", {})
+        })
+    return inverse
 
 
 def decipher(user_input):
     words = user_input.lower().replace(",", " , ").split()
 
-    aliases = load_aliases()
+    #aliases = load_aliases()
 
     history = load_history()
 
-    alias_command = check_alias(words, aliases)
+    #print("Checking alias: 1")
+    alias_command = check_alias(words)
     if alias_command:
         return alias_command
 
@@ -97,11 +126,11 @@ def decipher(user_input):
         return None
     action = action_info[0]
     action_index = action_info[1]
-    print(f"Action: {action}, Action-index: {action_index}")
+    #print(f"Action: {action}, Action-index: {action_index}")
 
 
     #######################################
-    #    Open and Close Apps and Files    #
+    # Open and Close Apps, Files, Aliases #
     #######################################
     if action == "open":
         #Find the targeted apps, and their respective parameters
@@ -118,7 +147,7 @@ def decipher(user_input):
         #Fore each app in the command
         for target in item_targets:
             #Check if alias in command
-            alias_command = check_alias(target["target"], aliases)
+            alias_command = check_alias(target["target"])
 
             if alias_command:
                 commands.extend(alias_command)
@@ -163,20 +192,24 @@ def decipher(user_input):
             return return_command("open", last_open["target"], parameters)
 
     elif action == "close":
-            targets = find_targets(words, action_index)
-            commands = []
-    
-            for target in targets:
-                item = find_match(target["target"], openables, open_synonyms)
-    
-                if not item:
-                    print(f"Close target not found: {' '.join(target['target'])}")
-                    continue
-    
-                commands.append(return_command("close", item))
-    
-            if commands:
-                return commands
+        targets = find_targets(words, action_index)
+        commands = []
+
+        for target in targets:
+            alias_command = check_alias(target["target"], inverted = True)
+
+            if alias_command:
+                commands.extend(alias_command)
+                continue
+            item = find_match(target["target"], openables, open_synonyms)
+
+            if not item:
+                print(f"Close target not found: {' '.join(target['target'])}")
+                continue
+            commands.append(return_command("close", item))
+
+        if commands:
+            return commands
 
 
     #######################################
@@ -189,20 +222,24 @@ def decipher(user_input):
         #print(f"Aliases identified: {aliases_to_create}")
 
         for alias in aliases_to_create:
-
-            target_item = find_match(alias["target"].split(), openables, open_synonyms)
-
-            if not target_item:
-                print(f"Cannot create alias. Target not found: {alias['target']}")
+            
+            # Check alias name BEFORE creating command
+            if not valid_alias_name(alias["alias"]):
                 continue
 
-            alias_commands.append(return_command("create_alias",
-                    alias["alias"],
-                    {
-                        "alias_for": target_item
-                    }
+            for target in alias["targets"]:
+                target_item = find_match(target.split(), openables, open_synonyms)
+
+                if not target_item:
+                    continue
+
+                alias_commands.append(return_command("create_alias",
+                        alias["alias"],
+                        {
+                            "alias_for": target_item
+                        }
+                    )
                 )
-            )
 
         if alias_commands:
             return alias_commands
@@ -218,6 +255,9 @@ def decipher(user_input):
 
         return return_command("delete_alias", alias_name)
 
+    elif action == "delete_all_aliases":
+        return return_command("delete_all_aliases")
+
 
     #######################################
     #       Start and Stop Projects       #
@@ -225,7 +265,7 @@ def decipher(user_input):
     elif action == "start_project":
         proj_target = find_target(words, action_index)
 
-        alias_command = check_alias(proj_target, aliases)
+        alias_command = check_alias(proj_target)
         if alias_command:
             return alias_command
 
@@ -260,7 +300,7 @@ def decipher(user_input):
     elif action == 'run_script':
         script_target = find_target(words, action_index)
 
-        alias_command = check_alias(script_target, aliases)
+        alias_command = check_alias(script_target)
         if alias_command:
             return alias_command
 

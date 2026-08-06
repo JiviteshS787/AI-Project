@@ -4,12 +4,13 @@ confirmations = {
     "start_project": "Starting project",
     "stop_project": "Stopping project",
     "run_script": "Running script",
-    "list_running_processes": "Listed running processes",
+    "list_running_processes": "Listing running processes",
     "show_history": "Showing history",
     "delete_history": "Clearing history",
     "delete_alias": "Deleting alias",
     "create_alias": "Creating alias",
-    "list_aliases": "Listing aliases"
+    "list_aliases": "Listing aliases",
+    "delete_all_aliases": "Deleting all aliases"
 }
 
 

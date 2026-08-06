@@ -19,34 +19,42 @@ openables = {**apps, **files}
 openable_synonyms = {**synonyms, **file_synonyms}
 
 
+def alias_start(words, index):
+    for i in range(index + 1, len(words)):
+        if words[i] == "means":
+            return True
+
+        # Stop if we hit another separator
+        if words[i] in [","]:
+            break
+
+    return False
+
+
 #Finding multiple aliases
 def find_aliases(words, action_length):
     remaining = words[action_length:]
+
     groups = []
     current = []
 
     i = 0
     while i < len(remaining):
         word = remaining[i]
-        current.append(word)
-
-        if word == "means":
-            # Find the target AFTER "means"
-            target_item, length = item_position(remaining, i+1, openables, openable_synonyms)
-
-            if target_item:
-                current.extend(target_item.split())
-
+        if word == "and":
+            if alias_start(remaining, i + 1):
                 groups.append(current)
                 current = []
-                i += (length + 1)
+                i += 1
                 continue
-        i += 1
 
+        current.append(word)
+        i += 1
     if current:
         groups.append(current)
 
     aliases = []
+
     for group in groups:
         if "means" not in group:
             continue
@@ -54,19 +62,32 @@ def find_aliases(words, action_length):
         means_index = group.index("means")
 
         alias_words = group[:means_index]
-        target_words = group[means_index+1:]
+        target_words = group[means_index + 1:]
 
-        # Resolve target properly
-        target_item, _ = item_position(target_words, 0, openables, openable_synonyms)
+        targets = []
+        current_target = []
+        for word in target_words:
+            if word in ["and", ","]:
+                if current_target:
+                    target_item, _ = item_position(current_target, 0, openables, openable_synonyms)
+                    if target_item:
+                        targets.append(target_item)
+                    current_target = []
+            else:
+                current_target.append(word)
 
-        if not target_item:
-            #print(f"Alias target not found: {' '.join(target_words)}")
+        # Add final target
+        if current_target:
+            target_item, _ = item_position(current_target, 0, openables, openable_synonyms)
+            if target_item:
+                targets.append(target_item)
+
+        if not targets:
             continue
 
-        # Split aliases by AND / comma
-        current_alias = []
-        alias_list = []
 
+        alias_list = []
+        current_alias = []
         for word in alias_words:
             if word in ["and", ","]:
                 if current_alias:
@@ -78,11 +99,10 @@ def find_aliases(words, action_length):
         if current_alias:
             alias_list.append(" ".join(current_alias))
 
-        # Build alias dicts
         for alias in alias_list:
             aliases.append({
                 "alias": alias,
-                "target": target_item
+                "targets": targets
             })
 
     return aliases
@@ -124,19 +144,22 @@ def split_commands(user_input):
     i = 0
     while i < len(words):
         word = words[i]
-
-        # Check if this position starts an action?
         action_info = find_action(words, i)
+
+        if action_info[0] and action_info[1] > 1:
+            action_words = words[i:i + action_info[1]]
+            current.extend(action_words)
+            i += action_info[1]
+            continue
+
         if action_info[0] and current:
             previous_action = find_action(words, 0)
 
-            # Ignore the original action
             if action_info[0] != previous_action[0]:
                 commands.append(" ".join(current))
                 current = []
 
         elif word in ["and", "then", ","]:
-            # Look after "and"
             next_action = find_action(words, i+1)
             if next_action[0]:
                 commands.append(" ".join(current))
@@ -144,11 +167,10 @@ def split_commands(user_input):
                 i += 1
                 continue
 
-            # Otherwise keep "and" as part of parameters
             current.append(word)
             i += 1
             continue
-
+        
         current.append(word)
         i += 1
 

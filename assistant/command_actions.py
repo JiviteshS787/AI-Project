@@ -37,17 +37,20 @@ actions = {
 
         "list aliases": "list_aliases",
         "aliases": "list_aliases",
-        "show aliases": "list_aliases"
+        "show aliases": "list_aliases",
+
+        "clear aliases": "delete_all_aliases"
     }
 
 def find_action(words, index=0):
     for length in range(3, 0, -1):
         if index + length <= len(words):
-            phrase = " ".join(words[index:index+length])
+            phrase = " ".join(words[index:index+length])          
+            #print(f"Index: {index}, Length:{length}, Phrase: {phrase}")
 
             # Exact match first
             if phrase in actions:
-                #print(f"Action found: {phrase}, Length: {length}")
+                #print(f"Action found: {phrase}, Length: {length}, Words: {words}")
                 return actions[phrase], length
 
     # Similar word matching

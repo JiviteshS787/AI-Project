@@ -14,7 +14,8 @@ past_actions = {
     "show_history": "Viewed history",
     "delete_history": "Cleared history",
     "delete_alias": "Deleted Alias",
-    "create_alias": "Creates Alias"
+    "create_alias": "Created Alias",
+    "delete_all_aliases": "Deleted all aliases"
 }
 
 #Load in anything in the memory, if unable to read return None for both entries.
