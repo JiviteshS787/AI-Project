@@ -1,0 +1,19 @@
+{
+    "open": "Opening",
+    "close": "Closing",
+    "start_project": "Starting project",
+    "stop_project": "Stopping project",
+    "run_script": "Running script",
+    "list_running_processes": "Listing running processes",
+    "show_history": "Showing history",
+    "delete_history": "Clearing history",
+    "delete_alias": "Deleting alias",
+    "create_alias": "Creating alias",
+    "list_aliases": "Listing aliases",
+    "delete_all_aliases": "Deleting all aliases",
+    "set_volume": "Setting volume",
+    "volume_up": "Increasing volume",
+    "volume_down": "Decreasing volume",
+    "mute_volume": "Muting",
+    "unmute_volume": "Un-muting"
+}

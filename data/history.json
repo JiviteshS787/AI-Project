@@ -1,54 +1,6 @@
 {
     "history": [
         {
-            "action": "run_script",
-            "target": "hello",
-            "parameters": {},
-            "time": "2026-07-30 16:52:47"
-        },
-        {
-            "action": "open",
-            "target": "chrome",
-            "parameters": {
-                "websites": [
-                    "claude.com"
-                ]
-            },
-            "time": "2026-07-31 13:38:04"
-        },
-        {
-            "action": "open",
-            "target": "outlook",
-            "parameters": {},
-            "time": "2026-07-31 16:13:57"
-        },
-        {
-            "action": "open",
-            "target": "chrome",
-            "parameters": {},
-            "time": "2026-07-31 16:55:10"
-        },
-        {
-            "action": "open",
-            "target": "documents",
-            "parameters": {},
-            "time": "2026-07-31 16:55:11"
-        },
-        {
-            "action": "close",
-            "target": "documents",
-            "parameters": {},
-            "time": "2026-07-31 16:55:21"
-        },
-        {
-            "action": "create_alias",
-            "target": "habits",
-            "parameters": {
-                "alias_for": "notion"
-            },
-            "time": "2026-07-31 17:00:43"
-        },
-        {
             "action": "delete_alias",
             "target": "mailing",
             "parameters": {},
@@ -143,14 +95,62 @@
                 "alias_for": "chrome"
             },
             "time": "2026-08-06 14:56:27"
+        },
+        {
+            "action": "volume_up",
+            "target": null,
+            "parameters": {},
+            "time": "2026-08-07 12:53:18"
+        },
+        {
+            "action": "set_volume",
+            "target": null,
+            "parameters": {
+                "level": 50
+            },
+            "time": "2026-08-07 12:53:36"
+        },
+        {
+            "action": "set_volume",
+            "target": null,
+            "parameters": {
+                "level": 0
+            },
+            "time": "2026-08-07 12:53:46"
+        },
+        {
+            "action": "set_volume",
+            "target": null,
+            "parameters": {
+                "level": 10
+            },
+            "time": "2026-08-07 12:58:03"
+        },
+        {
+            "action": "unmute_volume",
+            "target": null,
+            "parameters": {},
+            "time": "2026-08-07 12:58:09"
+        },
+        {
+            "action": "set_volume",
+            "target": null,
+            "parameters": {
+                "level": 40
+            },
+            "time": "2026-08-07 13:03:10"
+        },
+        {
+            "action": "unmute_volume",
+            "target": null,
+            "parameters": {},
+            "time": "2026-08-07 13:03:18"
         }
     ],
     "last_action": {
-        "action": "create_alias",
-        "target": "school",
-        "parameters": {
-            "alias_for": "chrome"
-        },
-        "time": "2026-08-06 14:56:27"
+        "action": "unmute_volume",
+        "target": null,
+        "parameters": {},
+        "time": "2026-08-07 13:03:18"
     }
 }

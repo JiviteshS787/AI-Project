@@ -1,6 +1,7 @@
 from assistant.tools import open_item, start_project, run_script, stop_project, list_processes, close_item
 from assistant.alias_manager import create_alias, delete_alias, list_aliases, delete_all_aliases
 from assistant.history import update_history, show_history, delete_history
+from assistant.system_tools.volume import volume_up, volume_down, set_volume, mute, unmute
 
 def execute(function): #function is a JSON obj, action and target are the attributes of said obj
     '''
@@ -81,6 +82,28 @@ def execute(function): #function is a JSON obj, action and target are the attrib
     elif action == 'delete_history':
         delete_history()
 
+    elif action == "volume_up":
+        volume_up()
+        update_history(function)
+
+
+    elif action == "volume_down":
+        volume_down()
+        update_history(function)
+
+
+    elif action == "mute_volume":
+        mute()
+        update_history(function)
+
+
+    elif action == "unmute_volume":
+        unmute()
+        update_history(function)
+
+    elif action == "set_volume":
+        set_volume(function["parameters"]["level"])
+        update_history(function)
 
     else:
         print("Unknown action")

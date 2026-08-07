@@ -1,17 +1,7 @@
-confirmations = {
-    "open": "Opening",
-    "close": "Closing",
-    "start_project": "Starting project",
-    "stop_project": "Stopping project",
-    "run_script": "Running script",
-    "list_running_processes": "Listing running processes",
-    "show_history": "Showing history",
-    "delete_history": "Clearing history",
-    "delete_alias": "Deleting alias",
-    "create_alias": "Creating alias",
-    "list_aliases": "Listing aliases",
-    "delete_all_aliases": "Deleting all aliases"
-}
+import json
+
+with open("data/confirmations.json", "r") as file:
+    confirmations = json.load(file)
 
 
 def format_command(command):
@@ -43,6 +33,13 @@ def format_command(command):
         alias_target = alias_target.title()
 
         return f"{action_text} {target_text} -> {alias_target}"
+
+    if action == "set_volume":
+        volume_level = parameters.get("level")
+
+        text = f"{action_text} to {volume_level}%"
+
+        return text
 
     # Actions with no target
     if not target:

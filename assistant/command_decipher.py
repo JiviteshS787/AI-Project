@@ -334,6 +334,39 @@ def decipher(user_input):
 
     elif action == "list_aliases":
         return return_command("list_aliases")
-    
+
+    #######################################
+    #           Volume Control            #
+    #######################################
+    elif action == "volume_up":
+        return return_command("volume_up")
+
+    elif action == "volume_down":
+        return return_command("volume_down")
+
+    elif action == "mute_volume":
+        return return_command("mute_volume")
+
+    elif action == "unmute_volume":
+        return return_command("unmute_volume")
+
+    elif action == "set_volume":
+        # Example: set volume 50
+
+        level = None
+
+        for word in words:
+            if word.isdigit():
+                level = int(word)
+                break
+
+        if level is None:
+            print("Please specify a volume level")
+            return None
+
+        # Clamp value between 0-100
+        level = max(0, min(100, level))
+
+        return return_command("set_volume", parameters={"level": level})
 
     return None
