@@ -41,6 +41,13 @@ def format_command(command):
 
         return text
 
+    if action == "snap_window":
+        direction = parameters.get("direction")
+
+        text = f"{action_text} {target_text} to the {direction}"
+
+        return text
+
     # Actions with no target
     if not target:
         return action_text

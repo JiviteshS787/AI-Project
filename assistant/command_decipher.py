@@ -351,8 +351,6 @@ def decipher(user_input):
         return return_command("unmute_volume")
 
     elif action == "set_volume":
-        # Example: set volume 50
-
         level = None
 
         for word in words:
@@ -364,9 +362,82 @@ def decipher(user_input):
             print("Please specify a volume level")
             return None
 
-        # Clamp value between 0-100
+        #Makes sure to not exceed 100%
         level = max(0, min(100, level))
 
         return return_command("set_volume", parameters={"level": level})
+
+    #######################################
+    #         Brightness Control          #
+    #######################################
+    elif action == "brightness_up":
+        return return_command("brightness_up")
+
+    elif action == "brightness_down":
+        return return_command("brightness_down")
+
+    elif action == "set_brightness":
+        level = None
+
+        for word in words:
+            if word.isdigit():
+                level = int(word)
+                break
+
+        if level is None:
+            print("Please specify a brightness level")
+            return None
+
+        #Makes sure to not exceed 100%
+        level = max(0, min(100, level))
+
+        return return_command("set_brightness", parameters = {"level": level})
+
+    #######################################
+    #           Window Control            #
+    #######################################
+
+    elif action in ["focus_window", "minimize_window", "maximize_window"]:
+        target = find_target(words, action_index)
+
+        if not target:
+            print("Specify a window name")
+            return None
+
+        name = " ".join(target)
+
+        return return_command(action, name)
+
+    elif action == "snap_window":
+        target = find_target(words, action_index)
+
+        if not target:
+            print("Snap format: snap <window> <direction>")
+            return None
+
+        #Remaining phrase
+        remaining = words[action_index:]
+
+        if not remaining:
+            print("Snap format: snap <window> <direction>")
+            return None
+
+        #Snap direction
+        direction = remaining[-1]
+
+        if direction not in ["left", "right"]:
+            print("Snap direction must be 'left' or 'right'")
+            return None
+
+        #Window name
+        window_words = remaining[:-1]
+
+        if not window_words:
+            print("Specify a window to snap")
+            return None
+
+        window = " ".join(window_words)
+
+        return return_command("snap_window", window,{"direction": direction})
 
     return None

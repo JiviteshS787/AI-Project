@@ -15,5 +15,12 @@
     "volume_up": "Increasing volume",
     "volume_down": "Decreasing volume",
     "mute_volume": "Muting",
-    "unmute_volume": "Un-muting"
+    "unmute_volume": "Un-muting",
+    "brightness_up": "Increasing brightness",
+    "brightness_down": "Decreasing brightness",
+    "set_brightness": "Setting brightness",
+    "focus_window": "Focusing window",
+    "minimize_window": "Minimizing window",
+    "maximize_window": "Maximizing window",
+    "snap_window": "Snapping"
 }

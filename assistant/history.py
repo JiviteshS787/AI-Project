@@ -61,7 +61,7 @@ def update_history(command):
     #Add command to history
     history["history"].append(command)
 
-    if len(history["history"]) > 20:
+    if len(history["history"]) > 40:
         #forget some things if too many stored
         history["history"].pop(0)
 

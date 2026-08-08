@@ -7,6 +7,7 @@
     "exit": "close",
     "quit": "close",
 
+
     "start": "start_project",
     "boot": "start_project",
 
@@ -15,13 +16,16 @@
 
     "run": "run_script",
 
+
     "list running processes": "list_running_processes",
     "list processes": "list_running_processes",
+
 
     "history": "show_history",
     "show history": "show_history",
     "delete history": "delete_history",
     "clear": "delete_history",
+
 
     "remember": "create_alias",
     "create alias": "create_alias",
@@ -38,6 +42,7 @@
 
     "clear aliases": "delete_all_aliases",
 
+
     "increase volume": "volume_up",
     "raise volume": "volume_up",
     "turn volume up": "volume_up",
@@ -51,5 +56,28 @@
 
     "unmute": "unmute_volume",
 
-    "set volume": "set_volume"
+    "set volume": "set_volume",
+    
+    "brightness up": "brightness_up",
+    "increase brightness": "brightness_up",
+    "turn brightness up": "brightness_up",
+
+    "brightness down": "brightness_down",
+    "decrease brightness": "brightness_down",
+    "turn brightness down": "brightness_down",
+
+    "set brightness": "set_brightness",
+
+
+    "focus": "focus_window",
+    "focus on": "focus_window",
+    "switch to": "focus_window",
+
+    "minimize": "minimize_window",
+    "minimize window": "minimize_window",
+
+    "maximize": "maximize_window",
+    "maximize window": "maximize_window",
+
+    "snap": "snap_window"
 }
