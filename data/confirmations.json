@@ -1,26 +1,41 @@
 {
     "open": "Opening",
     "close": "Closing",
+
     "start_project": "Starting project",
     "stop_project": "Stopping project",
     "run_script": "Running script",
+
     "list_running_processes": "Listing running processes",
     "show_history": "Showing history",
     "delete_history": "Clearing history",
+
     "delete_alias": "Deleting alias",
     "create_alias": "Creating alias",
     "list_aliases": "Listing aliases",
     "delete_all_aliases": "Deleting all aliases",
+    
     "set_volume": "Setting volume",
     "volume_up": "Increasing volume",
     "volume_down": "Decreasing volume",
     "mute_volume": "Muting",
     "unmute_volume": "Un-muting",
+
     "brightness_up": "Increasing brightness",
     "brightness_down": "Decreasing brightness",
     "set_brightness": "Setting brightness",
+
     "focus_window": "Focusing window",
     "minimize_window": "Minimizing window",
     "maximize_window": "Maximizing window",
-    "snap_window": "Snapping"
+    "snap_window": "Snapping",
+
+    "get_clipboard": "Showing clipboard",
+    "set_clipboard": "Copying to clipboard",
+    "clear_clipboard": "Clearing clipboard",
+
+    "sleep_system": "Going to sleep",
+    "lock_system": "Locking system",
+    "restart_system": "Restarting",
+    "shutdown_system": "Shutting down"
 }

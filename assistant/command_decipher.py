@@ -440,4 +440,41 @@ def decipher(user_input):
 
         return return_command("snap_window", window,{"direction": direction})
 
+
+    #######################################
+    #            Power Control            #
+    #######################################
+    elif action == "sleep_system":
+        return return_command("sleep_system")
+
+    elif action == "lock_system":
+        return return_command("lock_system")
+
+    elif action == "restart_system":
+        return return_command("restart_system")
+
+    elif action == "shutdown_system":
+        return return_command("shutdown_system")
+
+
+    #######################################
+    #        Clipboard Control            #
+    #######################################
+
+    elif action == "get_clipboard":
+        return return_command("get_clipboard")
+
+    elif action == "clear_clipboard":
+        return return_command("clear_clipboard")
+
+    elif action == "set_clipboard":
+        # everything after action becomes text
+        text = " ".join(words[action_index:]).replace("copy", "").strip()
+
+        if not text:
+            print("Nothing to copy")
+            return None
+
+        return return_command("set_clipboard", parameters={"text": text})
+
     return None

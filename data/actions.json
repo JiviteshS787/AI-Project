@@ -79,5 +79,22 @@
     "maximize": "maximize_window",
     "maximize window": "maximize_window",
 
-    "snap": "snap_window"
+    "snap": "snap_window",
+
+
+    "sleep": "sleep_system",
+    "lock": "lock_system",
+    "restart": "restart_system",
+    "shutdown": "shutdown_system",
+    "power off": "shutdown_system",
+
+
+    "clipboard": "get_clipboard",
+    "read clipboard": "get_clipboard",
+    "what is in my clipboard": "get_clipboard",
+
+    "copy": "set_clipboard",
+    "set clipboard": "set_clipboard",
+
+    "clear clipboard": "clear_clipboard"
 }

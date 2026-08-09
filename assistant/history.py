@@ -15,7 +15,11 @@ past_actions = {
     "delete_history": "Cleared history",
     "delete_alias": "Deleted Alias",
     "create_alias": "Created Alias",
-    "delete_all_aliases": "Deleted all aliases"
+    "delete_all_aliases": "Deleted all aliases",
+    "sleep_system": "Entered Sleep mode",
+    "restart_system": "Restarted",
+    "shutdown_system": "ShutDown",
+    "lock_system": "Locked system"
 }
 
 #Load in anything in the memory, if unable to read return None for both entries.

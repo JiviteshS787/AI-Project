@@ -5,6 +5,8 @@ from assistant.history import update_history, show_history, delete_history
 from assistant.system_tools.volume import volume_up, volume_down, set_volume, mute, unmute
 from assistant.system_tools.brightness import brightness_up, brightness_down, set_brightness
 from assistant.system_tools.window import focus_window, minimize_window, maximize_window, snap_window
+from assistant.system_tools.power import sleep_system, lock_system, restart_system, shutdown_system
+from assistant.system_tools.clipboard import get_clipboard, set_clipboard, clear_clipboard
 
 
 def execute(function): #function is a JSON obj, action and target are the attributes of said obj
@@ -149,6 +151,43 @@ def execute(function): #function is a JSON obj, action and target are the attrib
     elif action == "snap_window":
         snap_window(function["target"], function["parameters"]["direction"])
         update_history(function)
+
+
+    #######################################
+    #           Power Control             #
+    #######################################
+    elif action in ["sleep_system", "lock_system", "restart_system", "shutdown_system"]:
+        print(f"\n⚠️ Confirm power action: {action.replace('_', ' ')}")
+        confirm = input("Type 'yes' to confirm: ").lower().strip()
+
+        if confirm != "yes":
+            print("Cancelled.")
+            return
+
+        update_history(function)
+
+        if action == "sleep_system":
+            sleep_system()
+        elif action == "lock_system":
+            lock_system()
+        elif action == "restart_system":
+            restart_system()
+        elif action == "shutdown_system":
+            shutdown_system()
+
+
+    #######################################
+    #           Power Control             #
+    #######################################
+    elif action == "get_clipboard":
+        get_clipboard()
+
+    elif action == "set_clipboard":
+        set_clipboard(function["parameters"]["text"])
+
+    elif action == "clear_clipboard":
+        clear_clipboard()
+
 
     else:
         print("Unknown action")

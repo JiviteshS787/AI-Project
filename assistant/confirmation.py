@@ -48,6 +48,15 @@ def format_command(command):
 
         return text
 
+
+    if action == "set_clipboard":
+        copy = parameters.get("text")
+
+        text = f"{action_text}: {copy}"
+
+        return text
+
+
     # Actions with no target
     if not target:
         return action_text
