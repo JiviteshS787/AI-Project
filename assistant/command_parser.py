@@ -19,6 +19,23 @@ openables = {**apps, **files}
 openable_synonyms = {**synonyms, **file_synonyms}
 
 
+def find_monitors(words):
+    for i, word in enumerate(words):
+        if word.isdigit():
+            # check if next word is monitor
+            if i + 1 < len(words) and words[i + 1] in ["monitor", "screen"]:
+                return int(word)
+
+        # handle "second monitor", "third screen"
+        if word in ["first", "second", "third", "fourth"]:
+            mapping = {"first": 1, "second": 2, "third": 3, "fourth": 4}
+
+            if i + 1 < len(words) and words[i + 1] in ["monitor", "screen"]:
+                return mapping[word]
+
+    return None
+
+
 def alias_start(words, index):
     for i in range(index + 1, len(words)):
         if words[i] == "means":
@@ -193,6 +210,39 @@ def find_targets(words, action_length):
     while i < len(remaining):
         word = remaining[i]
         #print(f"Word: {word}, i: {i}")
+
+        if word == "on":
+            if i + 3 < len(remaining):
+                if (remaining[i + 1] == "my" and remaining[i + 3] in ["monitor", "screen"]):
+                    monitor_words = remaining[i + 2]
+
+                    monitor_numbers = {"first": 1, "second": 2, "third": 3, "fourth": 4}
+
+                    if monitor_words in monitor_numbers:
+                        if current:
+                            targets.append({
+                                "target": current,
+                                "parameters": {
+                                    "monitor": monitor_numbers[monitor_words]
+                                }
+                            })
+
+                        current = []
+                        i += 4
+                        continue
+
+                    if monitor_words.isdigit():
+                        if current:
+                            targets.append({
+                                "target": current,
+                                "parameters": {
+                                    "monitor": int(monitor_words)
+                                }
+                            })
+
+                        current = []
+                        i += 4
+                        continue
 
         # Start parameters
         if word == "with":

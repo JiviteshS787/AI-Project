@@ -4,7 +4,7 @@ from assistant.history import find_action_type, load_history
 
 from assistant.command_actions import find_action
 from assistant.command_matcher import find_match
-from assistant.command_parser import find_target, find_targets, find_parameters, find_aliases
+from assistant.command_parser import find_target, find_targets, find_parameters, find_aliases, find_monitors
 from assistant.alias_manager import load_aliases, valid_alias_name
 
 #Convert JSONs to py dicts

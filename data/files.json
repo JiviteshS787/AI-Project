@@ -2,24 +2,32 @@
     "downloads": {
         "type": "file",
         "path": "C:\\Users\\jivit\\Downloads",
-        "accepted_parameters": {}
+        "accepted_parameters": {
+            "monitor": true
+        }
     },
 
     "ai-project": {
         "type": "file",
         "path":"C:\\Users\\jivit\\AI_Project\\AI-Project",
-        "accepted_parameters": {}
+        "accepted_parameters": {
+            "monitor": true
+        }
     },
 
     "hand tracking": { 
         "type": "file",
         "path": "C:\\Users\\jivit\\Hand-Tracking\\HandTracking",
-        "accepted_parameters": {}
+        "accepted_parameters": {
+            "monitor": true
+        }
     },
 
     "documents":{
         "type": "file",
         "path": "C:\\Users\\jivit\\OneDrive\\Documents",
-        "accepted_parameters": {}
+        "accepted_parameters": {
+            "monitor": true
+        }
     }
 }

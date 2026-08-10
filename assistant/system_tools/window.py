@@ -1,25 +1,36 @@
-import pygetwindow as gw, pyautogui
+import pygetwindow as gw, pyautogui, time
 
 from screeninfo import get_monitors
 
 
 def move_window_to_monitor(name, monitor_number):
-    win = find_window(name)
+    monitors = get_monitors()
+
+    if monitor_number < 1 or monitor_number > len(monitors):
+        print(
+            f"Monitor {monitor_number} not found. "
+            f"Only {len(monitors)} display(s) available."
+        )
+        return False
+
+    monitor = monitors[monitor_number - 1]
+
+    # Wait for the application window to appear
+    win = None
+
+    for _ in range(20):
+        win = find_window(name)
+        if win:
+            break
+        time.sleep(0.25)
 
     if not win:
         print(f"Window not found: {name}")
         return False
 
-    monitors = get_monitors()
-
-    if monitor_number < 1 or monitor_number > len(monitors):
-        print(f"Monitor {monitor_number} not found")
-        return False
-
-    monitor = monitors[monitor_number - 1]
-
     try:
         win.moveTo(monitor.x, monitor.y)
+        print(f"{name} moved to monitor {monitor_number}")
         return True
     except Exception as e:
         print(f"Failed to move window: {e}")

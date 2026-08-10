@@ -14,9 +14,10 @@ def format_command(command):
     # Get the action phrase
     action_text = confirmations.get(action, action)
 
-    # Open with websites
+    # Open with websites / monitor
     if action == "open":
         text = f"{action_text} {target_text}"
+
         websites = parameters.get("websites", [])
 
         if websites:
@@ -25,6 +26,11 @@ def format_command(command):
                 for site in websites
             ]
             text += " with " + ", ".join(sites)
+
+        monitor = parameters.get("monitor")
+
+        if monitor:
+            text += f" on monitor {monitor}"
 
         return text
 
@@ -48,14 +54,12 @@ def format_command(command):
 
         return text
 
-
     if action == "set_clipboard":
         copy = parameters.get("text")
 
         text = f"{action_text}: {copy}"
 
         return text
-
 
     # Actions with no target
     if not target:

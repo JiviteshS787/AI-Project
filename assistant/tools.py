@@ -3,6 +3,8 @@ import subprocess, json, os, pygetwindow as gw
 from assistant.process_manager import start_process, stop_process, list_running_processes
 from assistant.app_manager import open_app as launch_app, close_app as terminate_app
 
+from assistant.system_tools import move_window_to_monitor
+
 #Load in json files
 with open("data/apps.json") as file:
     apps = json.load(file)
@@ -21,47 +23,57 @@ openables = {**apps, **files}
 
 
 
-def open_file(file_name):
-    if file_name in files:
-        path = files[file_name]["path"]
+def open_file(file_name, parameters=None):
+    if file_name not in files:
+        print(f"Unknown file: {file_name}")
+        return False
 
-        try:
-            os.startfile(path)
-            print(f"{file_name} => opened. \n")
-            return True
+    path = files[file_name]["path"]
 
-        except Exception as e:
-            print(f"Failed to open {file_name}: {e}")
-            return False
+    try:
+        os.startfile(path)
+        print(f"{file_name} => opened.\n")
 
-    print(f"Unknown file: {file_name}")
-    return False
+        if parameters and "monitor" in parameters:
+            monitor = parameters["monitor"]
+            move_window_to_monitor(file_name, monitor)
+        return True
+
+    except Exception as e:
+        print(f"Failed to open {file_name}: {e}")
+        return False
 
 
 def open_app(app_name, parameters=None):
     '''
     Open an app
     '''
-    if app_name in apps:
 
-        command = [apps[app_name]["path"]]
-
-        if parameters:
-            accepted = apps[app_name].get("accepted_parameters", {})
-
-            if accepted.get("websites", False):
-                for website in parameters.get("websites", []):
-                    command.append(website)
-
-        success = launch_app(command, app_name)
-
-        if not success:
-            print(f"Failed to launch {app_name}")
-
-        return success
-    else:
+    if app_name not in apps:
         print(f"Unknown application: {app_name}")
         return False
+
+    command = [apps[app_name]["path"]]
+
+    if parameters:
+        accepted = apps[app_name].get("accepted_parameters", {})
+
+        if accepted.get("websites", False):
+            for website in parameters.get("websites", []):
+                command.append(website)
+
+    success = launch_app(command, app_name)
+
+    if not success:
+        print(f"Failed to launch {app_name}")
+        return False
+
+    # Move to requested monitor
+    if parameters and "monitor" in parameters:
+        monitor = parameters["monitor"]
+        move_window_to_monitor(app_name, monitor)
+
+    return True
 
 
 def open_item(name, parameters=None):
@@ -79,7 +91,7 @@ def open_item(name, parameters=None):
         return open_app(name, parameters)
 
     elif item_type == "file":
-        return open_file(name)
+        return open_file(name, parameters)
 
     else:
         print(f"Unknown open type: {item_type}")
