@@ -96,5 +96,12 @@
     "copy": "set_clipboard",
     "set clipboard": "set_clipboard",
 
-    "clear clipboard": "clear_clipboard"
+    "clear clipboard": "clear_clipboard",
+
+
+    "available monitors": "list_monitors",
+    "list monitors": "list_monitors",
+
+    "move": "move_window_to_monitor",
+    "shift": "move_window_to_monitor"
 }

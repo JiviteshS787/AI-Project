@@ -4,7 +4,7 @@ from assistant.history import update_history, show_history, delete_history
 
 from assistant.system_tools.volume import volume_up, volume_down, set_volume, mute, unmute
 from assistant.system_tools.brightness import brightness_up, brightness_down, set_brightness
-from assistant.system_tools.window import focus_window, minimize_window, maximize_window, snap_window
+from assistant.system_tools.window import focus_window, minimize_window, maximize_window, snap_window, get_monitors_info, move_window_to_monitor
 from assistant.system_tools.power import sleep_system, lock_system, restart_system, shutdown_system
 from assistant.system_tools.clipboard import get_clipboard, set_clipboard, clear_clipboard
 
@@ -187,6 +187,17 @@ def execute(function): #function is a JSON obj, action and target are the attrib
 
     elif action == "clear_clipboard":
         clear_clipboard()
+
+    
+    #######################################
+    #          Monitor Control            #
+    #######################################
+    elif action == "list_monitors":
+        get_monitors_info()
+
+    elif action == "move_window_to_monitor":
+        move_window_to_monitor(function["target"], function["parameters"]["monitor"])
+        update_history(function)
 
 
     else:
