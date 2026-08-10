@@ -8,15 +8,6 @@
             "monitor": true
         }
     },
-    "avg": {
-        "type": "app",
-        "path": "C:\\Program Files (x86)\\AVG\\Browser\\Application\\AVGBrowser.exe",
-        "process": "AVGBrowser.exe",
-        "accepted_parameters":{
-            "websites": true,
-            "monitor": true
-        }
-    },
     "calculator": {
         "type": "app",
         "path": "calc.exe",
