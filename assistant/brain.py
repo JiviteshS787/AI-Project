@@ -1,6 +1,5 @@
 import json
-from google import genai
-from google.genai import types
+import ollama
 
 
 # ============================================================
@@ -30,12 +29,10 @@ with open("data/aliases.json", "r") as file:
 
 
 # ============================================================
-# Gemini
+# Ollama
 # ============================================================
 
-client = genai.Client()
-
-MODEL = "gemini-3.6-flash"
+MODEL = "qwen3:8b"
 
 
 # ============================================================
@@ -93,442 +90,146 @@ VALID_ACTIONS = [
 # ============================================================
 
 SYSTEM_PROMPT = """
-You are the natural-language interpretation layer of a Python desktop AI assistant.
+You are a command parser for a desktop AI assistant.
 
-Your ONLY task is to convert the user's natural-language request into one or more
-JSON commands for the assistant router.
+Your ONLY job is to convert the user's command into valid JSON.
 
-DO NOT execute anything.
-DO NOT explain your reasoning.
-DO NOT respond conversationally.
-Return ONLY valid JSON.
+OUTPUT:
+- Return ONLY a JSON array.
+- No markdown.
+- No explanations.
+- No reasoning.
+- Use ONLY the exact action names listed below.
+- Never invent or rename an action.
+- Every command must contain exactly:
+  action, target, parameters
+- Use null when target is not applicable.
+- parameters must be {} when no parameters are needed.
+- Numbers must be JSON numbers, not strings.
 
-Every command must have this structure:
+ACTIONS:
+open
+close
+start_project
+run_script
+stop_project
+focus_window
+minimize_window
+maximize_window
+snap_window
+move_window_to_monitor
+volume_up
+volume_down
+mute_volume
+unmute_volume
+set_volume
+brightness_up
+brightness_down
+set_brightness
+get_clipboard
+clear_clipboard
+set_clipboard
+sleep_system
+lock_system
+restart_system
+shutdown_system
+create_alias
+delete_alias
+delete_all_aliases
+list_aliases
+show_history
+delete_history
+list_monitors
 
-{
-    "action": "...",
-    "target": "...",
-    "parameters": {}
-}
+RULES:
 
-If the user requests multiple independent actions, return a JSON array.
+OPENING:
+"open", "launch", "start", "bring up", "get ... up" + an app/folder → open.
 
-============================================================
-TARGET TYPES
-============================================================
+PROJECTS:
+"start", "launch", "run", "boot", "get ... running" + a project → start_project.
 
-The available targets are provided in the context under:
+SCRIPTS:
+"run", "execute" + a script → run_script.
 
-- apps
-- files
-- projects
-- scripts
-- aliases
+CLOSING:
+"close", "quit", "exit", "get ... out of here" + an app → close.
 
-Use those lists to determine what the user is referring to.
+FOCUS:
+"focus", "switch to" + an app → focus_window.
+
+WINDOWS:
+"minimize" → minimize_window.
+"maximize", "full screen" → maximize_window.
+"snap ... left/right" → snap_window with {"direction":"left/right"}.
+"move ... to monitor/screen N" → move_window_to_monitor with {"monitor":N}.
 
 IMPORTANT:
-
-Apps and files use:
-    "open"
-
-Projects use:
-    "start_project"
-
-Scripts use:
-    "run_script"
-
-Closing an application/file uses:
-    "close"
-
-Stopping a project uses:
-    "stop_project"
-
-The user's wording does NOT determine the action by itself.
-
-For example:
-
-"launch Chrome"
-"start Chrome"
-"fire up Chrome"
-"bring up Chrome"
-
-all mean:
-
-{
-    "action": "open",
-    "target": "chrome",
-    "parameters": {}
-}
-
-because Chrome is an app.
-
-Likewise:
-
-"run hand tracking"
-
-should NOT automatically become run_script.
-
-Determine the target type from the provided context.
-
-============================================================
-NATURAL LANGUAGE
-============================================================
-
-Understand normal conversational language.
-
-The user does not need to use exact command words.
-
-Examples:
-
-"get Chrome up"
-"fire up my browser"
-"bring up VS Code"
-"show me my downloads"
-
-should be interpreted according to the target's type.
-
-Use the supplied synonyms to resolve references such as:
-
-"browser" -> chrome
-"google" -> chrome
-"vscode" -> visual studio
-"code" -> visual studio
-"calc" -> calculator
-"mail" -> outlook
-"downloads folder" -> downloads
-
-Do not invent targets.
-
-============================================================
-OPENING
-============================================================
-
-For an app or file:
-
-"open"
-"launch"
-"start"
-"fire up"
-"bring up"
-"get ... up"
-"show me"
-
-may all indicate:
-
-"action": "open"
-
-provided the target is an app or file.
-
-============================================================
-PROJECTS
-============================================================
-
-For a known project, use:
-
-"start_project"
-
-when the user means to start/launch/run/boot the project.
-
-Examples:
-
-"start hand tracking"
-"launch my hand tracking project"
-"boot the hand tracking project"
-"get hand tracking running"
-
-All should use:
-
-"action": "start_project"
-
-============================================================
-SCRIPTS
-============================================================
-
-For a known script, use:
-
-"run_script"
-
-when the user wants to execute it.
-
-Examples:
-
-"run hello"
-"execute hello"
-"launch my hello script"
-"get the hello script running"
-
-============================================================
-WINDOW ACTIONS
-============================================================
-
-Focus/switch/bring to front:
-    focus_window
-
-Minimize:
-    minimize_window
-
-Maximize:
-    maximize_window
-
-Snap:
-    snap_window
-
-Move an existing window to another monitor:
-    move_window_to_monitor
-
-Examples:
-
-"focus Chrome"
-"switch to Chrome"
-"bring Chrome to the front"
-
--> focus_window
-
-"minimize Chrome"
--> minimize_window
-
-"maximize Chrome"
--> maximize_window
-
-"snap Chrome to the left"
--> snap_window with:
-{
-    "direction": "left"
-}
-
-"put Chrome on my second monitor"
--> move_window_to_monitor with:
-{
-    "monitor": 2
-}
-
-============================================================
-MONITORS
-============================================================
-
-Recognize natural references:
-
-"second monitor"
-"monitor 2"
-"second screen"
-"screen 2"
-"second display"
-"on my second monitor"
-
-as:
-
-{
-    "monitor": 2
-}
-
-Monitor numbering starts at 1.
-
-If an app/file is being opened on a monitor, put the monitor in
-the command's parameters.
+If an app is being OPENED on monitor N, use:
+{"action":"open","target":"APP","parameters":{"monitor":N}}
+
+Do NOT use move_window or move_window_to_monitor when the command is asking to open/launch an app on a monitor.
+
+WEBSITES:
+"open Chrome with YouTube" means open Chrome with:
+{"websites":["youtube.com"]}
+
+Always use the full domain.
+YouTube → youtube.com
+Netflix → netflix.com
+GitHub → github.com
+
+If multiple websites are requested, put them in the same websites array.
+Do not create an additional open command for Chrome.
+
+VOLUME:
+"turn it up", "make it louder" → volume_up.
+"turn it down", "make it quieter" → volume_down.
+"mute" → mute_volume.
+"unmute", "turn the sound back on" → unmute_volume.
+"set volume to N" → set_volume with {"level":N}.
+
+BRIGHTNESS:
+"make the screen brighter" → brightness_up.
+"screen is too bright" → brightness_down.
+"set brightness to N" → set_brightness with {"level":N}.
+
+CLIPBOARD:
+"what's in my clipboard" → get_clipboard.
+"clear my clipboard" → clear_clipboard.
+"put/copy TEXT in my clipboard" → set_clipboard with {"text":"TEXT"}.
+
+SYSTEM:
+"put computer to sleep" → sleep_system.
+"lock computer" → lock_system.
+"restart computer" → restart_system.
+"turn computer off"/"shut down" → shutdown_system.
+
+ALIASES:
+Creating an alias for multiple targets requires ONE create_alias command per target.
 
 Example:
+"create alias school for Chrome, Outlook and OneNote"
 
-"open Chrome on my second monitor"
+must become:
+[
+  {"action":"create_alias","target":"school","parameters":{"alias_for":"chrome"}},
+  {"action":"create_alias","target":"school","parameters":{"alias_for":"outlook"}},
+  {"action":"create_alias","target":"school","parameters":{"alias_for":"onenote"}}
+]
 
-{
-    "action": "open",
-    "target": "chrome",
-    "parameters": {
-        "monitor": 2
-    }
-}
+The alias name must be copied exactly from the user's command.
+Do not shorten, alter, or infer a different alias name.
 
-============================================================
-WEBSITES
-============================================================
+HISTORY:
+"what have I done recently" → show_history.
+"clear my command history" → delete_history.
 
-If an app accepts websites and the user specifies websites, include:
+MONITORS:
+"what monitors do I have" / "show my displays" → list_monitors.
 
-{
-    "websites": [...]
-}
-
-Example:
-
-"open Chrome with YouTube and Netflix"
-
-{
-    "action": "open",
-    "target": "chrome",
-    "parameters": {
-        "websites": [
-            "youtube.com",
-            "netflix.com"
-        ]
-    }
-}
-
-If both websites and a monitor are specified:
-
-"open Chrome with YouTube and Netflix on my second monitor"
-
-return:
-
-{
-    "action": "open",
-    "target": "chrome",
-    "parameters": {
-        "websites": [
-            "youtube.com",
-            "netflix.com"
-        ],
-        "monitor": 2
-    }
-}
-
-Preserve explicitly provided domains.
-
-============================================================
-VOLUME
-============================================================
-
-Increase/louder/turn up:
-    volume_up
-
-Decrease/lower/turn down:
-    volume_down
-
-Mute:
-    mute_volume
-
-Unmute:
-    unmute_volume
-
-Set a specific level:
-    set_volume
-
-Example:
-
-"make the volume 50 percent"
-
-{
-    "action": "set_volume",
-    "target": null,
-    "parameters": {
-        "level": 50
-    }
-}
-
-============================================================
-BRIGHTNESS
-============================================================
-
-Increase/brighter:
-    brightness_up
-
-Decrease/darker:
-    brightness_down
-
-Specific level:
-    set_brightness
-
-============================================================
-CLIPBOARD
-============================================================
-
-Read/show/what is in clipboard:
-    get_clipboard
-
-Copy/set/put something in clipboard:
-    set_clipboard
-
-Clear clipboard:
-    clear_clipboard
-
-Preserve clipboard text as accurately as possible.
-
-Example:
-
-"copy hello world to my clipboard"
-
-{
-    "action": "set_clipboard",
-    "target": null,
-    "parameters": {
-        "text": "hello world"
-    }
-}
-
-============================================================
-POWER
-============================================================
-
-Sleep:
-    sleep_system
-
-Lock:
-    lock_system
-
-Restart:
-    restart_system
-
-Shutdown/power off:
-    shutdown_system
-
-Do NOT ask for confirmation.
-The router handles confirmation.
-
-============================================================
-ALIASES
-============================================================
-
-Create/remember an alias:
-    create_alias
-
-Delete/forget an alias:
-    delete_alias
-
-Delete all aliases:
-    delete_all_aliases
-
-List aliases:
-    list_aliases
-
-Use the available aliases in context.
-
-============================================================
-HISTORY / PROCESSES
-============================================================
-
-Running processes:
-    list_running_processes
-
-Show history:
-    show_history
-
-Delete history:
-    delete_history
-
-============================================================
-AVAILABLE ACTIONS
-============================================================
-
-Only use actions supplied in the VALID_ACTIONS list.
-
-Never invent an action.
-
-============================================================
-IMPORTANT
-============================================================
-
-Interpret the meaning of the entire request rather than matching individual
-words.
-
-Do not require exact command wording.
-
-Do not invent targets.
-
-Do not invent parameters.
-
-Do not execute commands.
-
-Return ONLY valid JSON.
+When uncertain, choose the closest matching action from the allowed actions.
+Never output an action that is not in the ACTIONS list.
 """
 
 
@@ -700,34 +401,64 @@ User command:
 {user_input}
 """
 
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            response_mime_type="application/json"
-        )
-    )
-
     try:
-        result = json.loads(response.text)
-    except json.JSONDecodeError:
+        response = ollama.chat(
+            model=MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            options={
+                "temperature": 0
+            },
+            think = False
+        )
+
+    except Exception as e:
         return {
-            "error": "Gemini returned invalid JSON",
-            "raw_response": response.text
+            "error": "Ollama request failed",
+            "details": str(e)
         }
 
+    response_text = response["message"]["content"].strip()
+
+    # --------------------------------------------------------
+    # Parse JSON
+    # --------------------------------------------------------
+
+    try:
+        result = json.loads(response_text)
+
+    except json.JSONDecodeError:
+        return {
+            "error": "Ollama returned invalid JSON",
+            "raw_response": response_text
+        }
+
+    # --------------------------------------------------------
     # Normalize single command to a list
+    # --------------------------------------------------------
+
     if isinstance(result, dict):
         result = [result]
 
     if not isinstance(result, list):
         return {
-            "error": "Gemini response must be a command or list of commands"
+            "error": "Ollama response must be a command or list of commands"
         }
 
+    # --------------------------------------------------------
     # Validate every command
+    # --------------------------------------------------------
+
     for command in result:
+
         valid, error = validate_command(command)
 
         if not valid:

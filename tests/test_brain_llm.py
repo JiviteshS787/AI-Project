@@ -13,6 +13,11 @@ IMPORTANT:
   chance of hitting the free-tier request-per-minute limit.
 """
 
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
 import json
 import time
 
@@ -23,7 +28,7 @@ from assistant.brain import interpret
 # Configuration
 # ============================================================
 
-DELAY_BETWEEN_REQUESTS = 15
+DELAY_BETWEEN_REQUESTS = 0
 
 # Start from this test number.
 # Set to 1 to start from the beginning.
@@ -39,6 +44,8 @@ CHECKPOINT_FILE = "tests/brain_llm_checkpoint.json"
 RESULTS_FILE = "tests/brain_llm_results.json"
 
 PRINT_RESPONSES = True
+
+LIVE_RESULTS_FILE = "tests/brain_llm_live_results.txt"
 
 
 # ============================================================
@@ -1541,204 +1548,307 @@ def run_tests():
 
     failures = []
 
-    print("=" * 75)
-    print("AI ASSISTANT — GEMINI INTERPRETATION STRESS TEST")
-    print("=" * 75)
+    # Open the live results file once.
+    # buffering=1 allows line-buffered writing.
+    live_file = open(
+        LIVE_RESULTS_FILE,
+        "w",
+        encoding="utf-8",
+        buffering=1
+    )
 
-    print(f"Total tests: {total}")
-    print(f"Delay between requests: {DELAY_BETWEEN_REQUESTS}s")
-    print()
+    def log(message=""):
+        """
+        Print to terminal AND immediately write to the live results file.
+        """
+        print(message, flush=True)
+        live_file.write(message + "\n")
+        live_file.flush()
 
-    for number, test in enumerate(TESTS, 1):
+    run_start = time.perf_counter()
 
-        name = test["name"]
-        user_input = test["input"]
+    try:
 
-        print("-" * 75)
-        print(f"TEST {number}/{total}: {name}")
-        print(f"Input: {user_input}")
+        log("=" * 75)
+        log("AI ASSISTANT — OLLAMA INTERPRETATION STRESS TEST")
+        log("=" * 75)
 
-        # ----------------------------------------------------
-        # Special contextual tests
-        # ----------------------------------------------------
+        log(f"Total tests: {total}")
+        log(f"Delay between requests: {DELAY_BETWEEN_REQUESTS}s")
+        log(f"Started: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        log()
 
-        if test.get("special"):
+        for number, test in enumerate(TESTS, 1):
 
-            print("SKIPPED")
-            print("Reason: requires previous assistant state or")
-            print("requires testing unknown-target behavior separately.")
+            name = test["name"]
+            user_input = test["input"]
 
-            skipped += 1
-            continue
-
-        # ----------------------------------------------------
-        # Call Gemini
-        # ----------------------------------------------------
-
-        try:
-            result = interpret(user_input)
-
-        except Exception as e:
-            print("FAILED")
-            print(f"Exception: {type(e).__name__}: {e}")
-
-            failed += 1
-
-            failures.append({
-                "name": name,
-                "input": user_input,
-                "expected": test.get("expected"),
-                "actual": f"EXCEPTION: {e}"
-            })
+            log("-" * 75)
+            log(f"TEST {number}/{total}: {name}")
+            log(f"Input: {user_input}")
 
             # ----------------------------------------------------
-            # Stop immediately on Gemini quota/rate-limit errors
+            # Special contextual tests
             # ----------------------------------------------------
 
-            if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+            if test.get("special"):
 
-                print()
-                print("=" * 75)
-                print("GEMINI QUOTA/RATE LIMIT REACHED")
-                print("=" * 75)
-                print("Stopping test run.")
-                print(f"Resume from test {number + 1} later.")
-
-                save_checkpoint(
-                    number + 1,
-                    passed,
-                    failed,
-                    skipped,
-                    failures
+                log("SKIPPED")
+                log(
+                    "Reason: requires previous assistant state or "
+                    "requires testing unknown-target behavior separately."
                 )
 
-                return False
+                skipped += 1
+                continue
 
-            time.sleep(DELAY_BETWEEN_REQUESTS)
-            continue
+            # ----------------------------------------------------
+            # Call Ollama and time it
+            # ----------------------------------------------------
 
-        # ----------------------------------------------------
-        # Print result
-        # ----------------------------------------------------
+            request_start = time.perf_counter()
 
-        if PRINT_RESPONSES:
+            try:
+                result = interpret(user_input)
 
-            print("Gemini returned:")
+                request_time = time.perf_counter() - request_start
 
-            print(
-                json.dumps(
-                    result,
-                    indent=4,
-                    ensure_ascii=False
+            except Exception as e:
+
+                request_time = time.perf_counter() - request_start
+
+                log("FAILED")
+                log(f"Exception: {type(e).__name__}: {e}")
+                log(f"Request time: {request_time:.3f} seconds")
+
+                failed += 1
+
+                failures.append({
+                    "name": name,
+                    "input": user_input,
+                    "expected": test.get("expected"),
+                    "actual": f"EXCEPTION: {e}"
+                })
+
+                # ------------------------------------------------
+                # Stop on rate-limit errors
+                # ------------------------------------------------
+
+                if "429" in str(e) or "RESOURCE_EXHAUSTED" in str(e):
+
+                    log()
+                    log("=" * 75)
+                    log("OLLAMA RATE LIMIT / QUOTA ERROR")
+                    log("=" * 75)
+                    log("Stopping test run.")
+                    log(f"Resume from test {number + 1} later.")
+
+                    save_checkpoint(
+                        number + 1,
+                        passed,
+                        failed,
+                        skipped,
+                        failures
+                    )
+
+                    return False
+
+                if number < total:
+
+                    log(
+                        f"\nWaiting {DELAY_BETWEEN_REQUESTS}s "
+                        "before next Ollama request..."
+                    )
+
+                    time.sleep(DELAY_BETWEEN_REQUESTS)
+
+                continue
+
+            # ----------------------------------------------------
+            # Print result
+            # ----------------------------------------------------
+
+            if PRINT_RESPONSES:
+
+                log("Ollama returned:")
+
+                log(
+                    json.dumps(
+                        result,
+                        indent=4,
+                        ensure_ascii=False
+                    )
                 )
+
+            # ----------------------------------------------------
+            # Compare
+            # ----------------------------------------------------
+
+            expected = test.get("expected")
+
+            if commands_match(result, expected):
+
+                log("PASS")
+                passed += 1
+
+            else:
+
+                log("FAIL")
+
+                log("\nExpected:")
+                log(
+                    json.dumps(
+                        expected,
+                        indent=4,
+                        ensure_ascii=False
+                    )
+                )
+
+                log("\nActual:")
+                log(
+                    json.dumps(
+                        result,
+                        indent=4,
+                        ensure_ascii=False
+                    )
+                )
+
+                failed += 1
+
+                failures.append({
+                    "name": name,
+                    "input": user_input,
+                    "expected": expected,
+                    "actual": result
+                })
+
+            # ----------------------------------------------------
+            # Print timing
+            # ----------------------------------------------------
+
+            log(f"Request time: {request_time:.3f} seconds")
+
+            # ----------------------------------------------------
+            # Running statistics
+            # ----------------------------------------------------
+
+            completed = passed + failed
+
+            elapsed = time.perf_counter() - run_start
+
+            if completed > 0:
+                average_time = elapsed / completed
+
+                remaining = total - number
+
+                estimated_remaining = (
+                    average_time * remaining
+                )
+
+                log(
+                    f"Average request time: "
+                    f"{average_time:.3f} seconds"
+                )
+
+                log(
+                    f"Estimated remaining time: "
+                    f"{estimated_remaining / 60:.1f} minutes"
+                )
+
+            # ----------------------------------------------------
+            # Save progress after EVERY test
+            # ----------------------------------------------------
+
+            save_checkpoint(
+                number + 1,
+                passed,
+                failed,
+                skipped,
+                failures
             )
 
-        # ----------------------------------------------------
-        # Compare
-        # ----------------------------------------------------
+            # ----------------------------------------------------
+            # Delay
+            # ----------------------------------------------------
 
-        expected = test.get("expected")
+            if number < total:
 
-        if commands_match(result, expected):
+                log(
+                    f"\nWaiting {DELAY_BETWEEN_REQUESTS}s "
+                    "before next Ollama request..."
+                )
 
-            print("PASS")
-            passed += 1
+                time.sleep(DELAY_BETWEEN_REQUESTS)
+
+        # ========================================================
+        # Final report
+        # ========================================================
+
+        total_time = time.perf_counter() - run_start
+
+        log()
+        log("=" * 75)
+        log("FINAL RESULTS")
+        log("=" * 75)
+
+        log(f"Total:        {total}")
+        log(f"Passed:       {passed}")
+        log(f"Failed:       {failed}")
+        log(f"Skipped:      {skipped}")
+        log(f"Total runtime: {total_time / 60:.2f} minutes")
+
+        if passed + failed > 0:
+
+            average_request_time = (
+                total_time / (passed + failed)
+            )
+
+            log(
+                f"Average request time: "
+                f"{average_request_time:.3f} seconds"
+            )
+
+        if failed == 0:
+
+            log()
+            log("ALL NON-SKIPPED TESTS PASSED!")
 
         else:
 
-            print("FAIL")
+            log()
+            log("=" * 75)
+            log("FAILED TESTS")
+            log("=" * 75)
 
-            print("\nExpected:")
-            print(
-                json.dumps(
-                    expected,
-                    indent=4,
-                    ensure_ascii=False
+            for failure in failures:
+
+                log()
+                log(f"TEST: {failure['name']}")
+                log(f"INPUT: {failure['input']}")
+
+                log("\nEXPECTED:")
+                log(
+                    json.dumps(
+                        failure["expected"],
+                        indent=4,
+                        ensure_ascii=False
+                    )
                 )
-            )
 
-            print("\nActual:")
-            print(
-                json.dumps(
-                    result,
-                    indent=4,
-                    ensure_ascii=False
+                log("\nACTUAL:")
+                log(
+                    json.dumps(
+                        failure["actual"],
+                        indent=4,
+                        ensure_ascii=False
+                    )
                 )
-            )
 
-            failed += 1
+        return failed == 0
 
-            failures.append({
-                "name": name,
-                "input": user_input,
-                "expected": expected,
-                "actual": result
-            })
+    finally:
 
-        # ----------------------------------------------------
-        # Rate-limit protection
-        # ----------------------------------------------------
-
-        if number < total:
-
-            print(
-                f"\nWaiting {DELAY_BETWEEN_REQUESTS}s "
-                "before next Gemini request..."
-            )
-
-            time.sleep(DELAY_BETWEEN_REQUESTS)
-
-    # ========================================================
-    # Final report
-    # ========================================================
-
-    print()
-    print("=" * 75)
-    print("FINAL RESULTS")
-    print("=" * 75)
-
-    print(f"Total:   {total}")
-    print(f"Passed:  {passed}")
-    print(f"Failed:  {failed}")
-    print(f"Skipped: {skipped}")
-
-    if failed == 0:
-
-        print()
-        print("ALL NON-SKIPPED TESTS PASSED!")
-
-    else:
-
-        print()
-        print("=" * 75)
-        print("FAILED TESTS")
-        print("=" * 75)
-
-        for failure in failures:
-
-            print()
-            print(f"TEST: {failure['name']}")
-            print(f"INPUT: {failure['input']}")
-
-            print("\nEXPECTED:")
-            print(
-                json.dumps(
-                    failure["expected"],
-                    indent=4,
-                    ensure_ascii=False
-                )
-            )
-
-            print("\nACTUAL:")
-            print(
-                json.dumps(
-                    failure["actual"],
-                    indent=4,
-                    ensure_ascii=False
-                )
-            )
-
-    return failed == 0
+        live_file.close()
 
 
 # ============================================================
