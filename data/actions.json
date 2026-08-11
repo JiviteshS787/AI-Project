@@ -9,7 +9,7 @@
 
 
     "start": "start_project",
-    "boot": "start_project",
+    "boot up": "start_project",
 
     "stop": "stop_project",
     "terminate": "stop_project",

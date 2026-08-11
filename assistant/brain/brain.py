@@ -89,6 +89,7 @@ VALID_ACTIONS = [
 # System instructions
 # ============================================================
 
+
 SYSTEM_PROMPT = """
 You are a command parser for a desktop AI assistant.
 
@@ -231,6 +232,7 @@ MONITORS:
 When uncertain, choose the closest matching action from the allowed actions.
 Never output an action that is not in the ACTIONS list.
 """
+
 
 
 # ============================================================

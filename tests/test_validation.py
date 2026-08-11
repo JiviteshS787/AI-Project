@@ -1,7 +1,7 @@
 import pytest
 
-from assistant.brain import validate_command
-from assistant.brain import apps, files, projects, scripts, aliases
+from assistant.brain.brain import validate_command
+from assistant.brain.brain import apps, files, projects, scripts, aliases
 
 
 # ============================================================
