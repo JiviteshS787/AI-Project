@@ -1,6 +1,4 @@
 import time
-import sys
-
 
 from assistant.brain.brain import validate_command
 from assistant.brain.brain_groq_json import interpret
@@ -78,7 +76,7 @@ TESTS = [
 ]
 
 
-WAIT_TIME = 15
+WAIT_TIME = 20
 
 
 def main():

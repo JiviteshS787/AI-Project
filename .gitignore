@@ -216,3 +216,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Local Groq usage tracking data (machine-specific, not for version control)
+assistant/monitor/.groq_usage.json
+

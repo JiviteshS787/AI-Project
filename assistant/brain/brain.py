@@ -268,11 +268,14 @@ def validate_command(command):
     target = command.get("target")
     parameters = command.get("parameters", {})
 
-    if action not in VALID_ACTIONS:
-        return False, f"Invalid action: {action}"
-
     if not isinstance(parameters, dict):
         return False, "Parameters must be an object"
+
+    # History command is explicitly marked by the LLM.
+    history_command = parameters.get("history") is True
+
+    if action not in VALID_ACTIONS:
+        return False, f"Invalid action: {action}"
 
     # Actions that don't use a target
     no_target_actions = {
@@ -303,7 +306,7 @@ def validate_command(command):
         if target not in [None, ""]:
             return False, f"{action} should not have a target"
 
-    # Validate known targets
+    # Actions that require a target
     target_actions = {
         "open",
         "close",
@@ -320,7 +323,8 @@ def validate_command(command):
 
     if action in target_actions:
 
-        if not target:
+        # History commands are allowed to have no target
+        if not target and not history_command:
             return False, f"{action} requires a target"
 
         valid_targets = (
@@ -340,23 +344,30 @@ def validate_command(command):
             "snap_window",
             "move_window_to_monitor"
         }:
-            if target not in valid_targets:
-                return False, f"Unknown target: {target}"
 
+            # History commands don't need their target validated,
+            # because the history manager will recover it.
+            if not history_command:
+                if target not in valid_targets:
+                    return False, f"Unknown target: {target}"
 
+    # Validate specific target types
     if action in {"open", "start_project", "run_script"}:
+
         if action == "open":
-            if target not in apps and target not in files:
-                return False, f"{target} cannot be opened"
+            if not history_command:
+                if target not in apps and target not in files:
+                    return False, f"{target} cannot be opened"
 
         elif action == "start_project":
-            if target not in projects:
-                return False, f"{target} is not a known project"
+            if not history_command:
+                if target not in projects:
+                    return False, f"{target} is not a known project"
 
         elif action == "run_script":
-            if target not in scripts:
-                return False, f"{target} is not a known script"
-
+            if not history_command:
+                if target not in scripts:
+                    return False, f"{target} is not a known script"
 
     # Numeric validation
     if action in {"set_volume", "set_brightness"}:
@@ -368,6 +379,7 @@ def validate_command(command):
         if not 0 <= level <= 100:
             return False, f"{action} level must be between 0 and 100"
 
+    # Monitor validation
     if action in {"open", "move_window_to_monitor"}:
         if "monitor" in parameters:
             monitor = parameters["monitor"]
@@ -375,10 +387,12 @@ def validate_command(command):
             if not isinstance(monitor, int) or monitor < 1:
                 return False, "Monitor must be a positive integer"
 
+    # Snap validation
     if action == "snap_window":
         if parameters.get("direction") not in {"left", "right"}:
             return False, "Snap direction must be left or right"
 
+    # Clipboard validation
     if action == "set_clipboard":
         if not isinstance(parameters.get("text"), str):
             return False, "Clipboard text must be a string"
