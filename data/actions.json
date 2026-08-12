@@ -23,8 +23,9 @@
 
     "history": "show_history",
     "show history": "show_history",
+    
     "delete history": "delete_history",
-    "clear": "delete_history",
+    "clear history": "delete_history",
 
 
     "remember": "create_alias",
