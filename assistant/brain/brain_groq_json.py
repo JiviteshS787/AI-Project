@@ -1,5 +1,6 @@
 import json
 import os
+
 from groq import Groq
 
 from assistant.monitor.usage_tracker import UsageTracker
@@ -582,7 +583,7 @@ User command:
           prompt_tokens=response.usage.prompt_tokens,
           completion_tokens=response.usage.completion_tokens,
         )
-
+        
     except Exception as e:
         return {
             "error": "Groq request failed",
