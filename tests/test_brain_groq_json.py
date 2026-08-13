@@ -1,10 +1,10 @@
 import time
 
 from assistant.brain.brain import validate_command
-from assistant.brain.brain_groq_json import interpret
+from assistant.brain.brain_groq_json import interpret, MODEL
 
 
-TESTS = [
+'''TESTS = [
     # --- OPEN / CLOSE ---
     ("Open Chrome", "open chrome"),
     ("Natural Chrome launch", "can you launch Chrome for me?"),
@@ -68,11 +68,79 @@ TESTS = [
     ("List processes", "list running processes"),
     ("List monitors", "what monitors are available"),
 
-    # --- HISTORY (should NOT go through validator) ---
+    # --- HISTORY ---
     ("Repeat", "do that again"),
     ("Open again", "open it again"),
     ("Run again", "run again"),
     ("Start again", "start again"),
+]
+
+'''
+
+
+TESTS = [
+    # --- OPEN / CLOSE ---
+    ("Open natural", "can you go ahead and bring Chrome up"),
+    ("Close natural", "I'm done with Chrome, close it"),
+
+    # --- SELF CORRECTION / CHANGING MIND ---
+    ("Correction app", "open Chrome wait no Notion"),
+    ("Correction action", "close Chrome no wait minimize Notion"),
+    ("Correction monitor", "open Chrome on my second monitor actually third monitor"),
+    ("Correction multiple", "open Chrome on monitor two with YouTube no wait monitor three with Netflix"),
+
+    # --- PROJECTS / SCRIPTS ---
+    ("Start project filler", "uh boot up hand tracking"),
+    ("Run script natural", "can you go ahead and run hello"),
+
+    # --- WINDOW CONTROL ---
+    ("Focus natural", "bring Chrome to the front"),
+    ("Minimize natural", "get Chrome out of the way"),
+    ("Maximize natural", "make Chrome full screen"),
+    ("Snap natural", "put Chrome on the left"),
+    ("Move monitor filler", "can you move Chrome uh to monitor two"),
+
+    # --- PARAMETERS ---
+    ("Chrome websites 3", "launch Chrome with YouTube Netflix and Gmail"),
+    ("Chrome complex", "can you launch Chrome on monitor two with YouTube and Netflix"),
+
+    # --- VOLUME / BRIGHTNESS ---
+    ("Volume up natural", "it's a little quiet, turn it up"),
+    ("Set volume natural", "set my volume to fifty"),
+    ("Volume correction", "turn the volume down wait no turn it up"),
+    ("Brightness down natural", "that's too bright, make it darker"),
+    ("Brightness correction", "make it brighter actually darker"),
+
+    # --- CLIPBOARD ---
+    ("Clipboard natural", "what did I just copy"),
+    ("Clear clipboard natural", "get rid of whatever is in my clipboard"),
+
+    # --- ALIASES ---
+    ("Create alias natural", "make an alias called school for Chrome Outlook and OneNote"),
+    ("Run alias direct", "school"),
+    ("Run alias natural", "can you start my school setup"),
+    ("Delete alias natural", "get rid of the school alias"),
+
+    # --- SYSTEM / POWER ---
+    ("Lock natural", "I'm stepping away, lock my computer"),
+    ("Shutdown natural", "I'm done for today, shut down my computer"),
+    ("Power correction", "restart my computer wait no lock it"),
+    ("Shutdown correction", "shut down my computer actually don't"),
+
+    # --- LISTING ---
+    ("Processes natural", "what's currently running"),
+
+    # --- CONTEXT / HISTORY ---
+    ("Context minimize", "open Chrome and then minimize it"),
+
+    # --- IMPLICIT COMMANDS ---
+    ("Implicit app", "I need Chrome"),
+    ("Implicit volume", "a little louder"),
+    ("Implicit brightness", "it's too dark"),
+
+    # --- LONG / COMPLEX ---
+    ("Complex setup", "open Chrome on my second monitor with YouTube and then start the hand tracking project"),
+    ("Complex correction", "open Chrome on monitor two with YouTube actually no monitor three with Netflix"),
 ]
 
 
@@ -84,9 +152,12 @@ def main():
     passed = 0
     failed = 0
     total_time = 0
+    name = "GPT-OSS-20b"
+    if "llama" in MODEL:
+        name = "LLAMA-3.1-8b"
 
     print("=" * 70)
-    print("AI ASSISTANT — VALIDATION TEST")
+    print(f"AI ASSISTANT — {name} — VALIDATION TEST")
     print("=" * 70)
 
     for i, (name, prompt) in enumerate(TESTS, start=1):
@@ -109,6 +180,7 @@ def main():
             print("LLM Output:")
             print(raw)
 
+            validity_time = time.time()
             if valid:
                 print()
                 print("PASS")
@@ -117,8 +189,10 @@ def main():
                 print("FAIL")
                 print("Reason:", error)
                 failed += 1
+            validity_time_elapsed = time.time() - validity_time
 
             print(f"Request time: {elapsed:.3f} seconds")
+            print(f"Validity check time: {validity_time_elapsed:.3f} seconds")
 
         except Exception as e:
             elapsed = time.time() - start

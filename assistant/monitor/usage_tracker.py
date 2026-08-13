@@ -42,10 +42,8 @@ class UsageTracker:
         self.path = path
         self._data = self._load()
 
-
     def reload(self):
         self._data = self._load()
-
 
     def _load(self) -> dict:
         if self.path.exists():
@@ -79,9 +77,7 @@ class UsageTracker:
         # Local tracking (RPM window + TPD running total)
         now = time.time()
         bucket["recent_request_times"].append(now)
-        bucket["recent_request_times"] = [
-            t for t in bucket["recent_request_times"] if now - t < 60
-        ]
+        bucket["recent_request_times"] = [t for t in bucket["recent_request_times"] if now - t < 60]
         bucket["requests_today"] += 1
         bucket["tokens_today"] += total_tokens
 
