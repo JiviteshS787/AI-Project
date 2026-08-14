@@ -180,7 +180,7 @@ WAIT_TIME = 20
 def main():
     #print(f"[prompt size] {len(SYSTEM_PROMPT)} chars")
 
-    if "llama" in MODEL:
+    if "llama" in MODEL or "120" in MODEL:
         WAIT_TIME = 30
     else:
         WAIT_TIME = 20

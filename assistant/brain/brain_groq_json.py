@@ -17,7 +17,8 @@ llama-3.1-8b-instant -> yet to test with new prompt
 '''
 
 #MODEL = "llama-3.1-8b-instant"
-MODEL = "openai/gpt-oss-20b"
+#MODEL = "openai/gpt-oss-20b"
+MODEL = "openai/gpt-oss-120b"
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
