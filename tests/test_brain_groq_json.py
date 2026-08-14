@@ -4,7 +4,8 @@ from assistant.brain.brain import validate_command
 from assistant.brain.brain_groq_json import interpret, MODEL, SYSTEM_PROMPT
 
 
-'''TESTS = [
+'''
+TESTS = [
     # --- OPEN / CLOSE ---
     ("Open Chrome", "open chrome"),
     ("Natural Chrome launch", "can you launch Chrome for me?"),
@@ -74,7 +75,6 @@ from assistant.brain.brain_groq_json import interpret, MODEL, SYSTEM_PROMPT
     ("Run again", "run again"),
     ("Start again", "start again"),
 ]
-
 '''
 
 
@@ -85,7 +85,7 @@ TESTS = [
 
     # --- SELF CORRECTION / CHANGING MIND ---
     ("Correction app", "open Chrome wait no Notion"),
-    ("Correction action", "close Chrome no wait minimize Notion"),
+    ("Correction action", "close Chrome no wait minimize Chrome"),
     ("Correction monitor", "open Chrome on my second monitor actually third monitor"),
     ("Correction multiple", "open Chrome on monitor two with YouTube no wait monitor three with Netflix"),
 
@@ -141,7 +141,37 @@ TESTS = [
     # --- LONG / COMPLEX ---
     ("Complex setup", "open Chrome on my second monitor with YouTube and then start the hand tracking project"),
     ("Complex correction", "open Chrome on monitor two with YouTube actually no monitor three with Netflix"),
+
+    # --- NATURAL LANG. HISTORY ---
+    ("History", "Could you uh run it again"),
+    ("History Test 2", "Lets open that again"),
+    ("History Test 3", "Could you repeat that again, thanks")
 ]
+
+
+'''
+TESTS = [
+    # --- PREVIOUSLY TESTED & FAILED/FLAGGED ---
+    ("Run script natural", "can you go ahead and run hello"),
+    ("Run alias direct", "school"),
+    ("Run alias natural", "can you start my school setup"),
+    ("Shutdown correction", "shut down my computer actually don't"),
+    ("History", "Could you uh run it again"),
+    ("History Test 3", "Could you repeat that again, thanks"),
+
+    # --- CORRECTION MARKER TESTS (ADDED) ---
+    ("Correction app", "open Chrome wait no Notion"),
+    ("Correction action", "close Chrome no wait minimize Chrome"),
+    ("Correction monitor", "open Chrome on my second monitor actually third monitor"),
+    ("Correction multiple", "open Chrome on monitor two with YouTube no wait monitor three with Netflix"),
+    ("Volume correction", "turn the volume down wait no turn it up"),
+    ("Brightness correction", "make it brighter actually darker"),
+    ("Power correction", "restart my computer wait no lock it"),
+    ("Complex correction", "open Chrome on monitor two with YouTube actually no monitor three with Netflix")
+]
+
+'''
+
 
 
 WAIT_TIME = 20
@@ -149,6 +179,11 @@ WAIT_TIME = 20
 
 def main():
     #print(f"[prompt size] {len(SYSTEM_PROMPT)} chars")
+
+    if "llama" in MODEL:
+        WAIT_TIME = 30
+    else:
+        WAIT_TIME = 20
 
     total = len(TESTS)
     passed = 0
@@ -174,7 +209,18 @@ def main():
         try:
             raw = interpret(prompt)
 
-            valid, error = validate_command(raw)
+            if isinstance(raw, dict) and "error" in raw:
+                accepted = False
+                error = raw.get("details", raw.get("error", "Unknown error"))
+            else:
+                accepted = True
+                error = None
+                for entry in raw:
+                    valid, err = validate_command(entry)
+                    if not valid:
+                        accepted = False
+                        error = err
+                        break
 
             elapsed = time.time() - start
             total_time += elapsed
@@ -183,7 +229,7 @@ def main():
             print(raw)
 
             validity_time = time.time()
-            if valid:
+            if accepted:
                 print()
                 print("PASS")
                 passed += 1

@@ -228,3 +228,5 @@ system_prompt.txt
 
 #Different version of brain.py file, returns [action][target][parameters] in english format, not JSON
 test_brain_command_return.txt
+
+test_results-gpt-oss-20b.txt
