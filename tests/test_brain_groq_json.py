@@ -1,7 +1,7 @@
 import time
 
 from assistant.brain.brain import validate_command
-from assistant.brain.brain_groq_json import interpret, MODEL
+from assistant.brain.brain_groq_json import interpret, MODEL, SYSTEM_PROMPT
 
 
 '''TESTS = [
@@ -148,6 +148,8 @@ WAIT_TIME = 20
 
 
 def main():
+    #print(f"[prompt size] {len(SYSTEM_PROMPT)} chars")
+
     total = len(TESTS)
     passed = 0
     failed = 0

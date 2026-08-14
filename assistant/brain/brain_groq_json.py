@@ -16,8 +16,8 @@ GPT-OSS-20b -> 44/45 -> invalid action = 'again'
 llama-3.1-8b-instant -> yet to test with new prompt
 '''
 
-MODEL = "llama-3.1-8b-instant"
-#MODEL = "openai/gpt-oss-20b"
+#MODEL = "llama-3.1-8b-instant"
+MODEL = "openai/gpt-oss-20b"
 
 client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
@@ -187,7 +187,8 @@ FINAL RULES:
 - Output nothing but the JSON object — no exceptions.
 """
 
-SYSTEM_PROMPT = """
+#SYSTEM_PROMPT = 
+"""
 You interpret spoken commands (from speech-to-text, so expect no punctuation,
 filler words, false starts, and mis-transcribed words). Convert each request into:
 
@@ -365,6 +366,91 @@ FINAL RULES:
 - Output nothing but the JSON object — no exceptions.
 """
 
+SYSTEM_PROMPT = """
+Interpret spoken commands (STT: no punctuation, filler, false starts, mishears).
+Output ONLY: {"action":"...", "target":"...", "parameters":{}}
+No markdown, no explanation, no extra text.
+
+Match by intent, not literal wording. ACTION NAMES must be copied exactly
+from the canonical list — never renamed/shortened/merged.
+
+STT NOISE: ignore filler (um/uh/like/so/yeah/okay). Mishears: to/too/2,
+for/four, won/one, write/right. No punctuation assumed.
+
+CORRECTIONS ("wait"/"no wait"/"actually"/"no"/"I mean"/"sorry"): speaker
+discards prior words, even for one word/number. Replace fully, never merge
+old+new. One JSON object only.
+  "open Chrome wait no Notion" -> open, target=notion
+  "close Chrome no wait minimize Notion" -> minimize_window, target=notion
+  "monitor two with YouTube no wait monitor three with Netflix" ->
+    {"monitor":3,"websites":["netflix"]} (youtube dropped, not merged)
+  Cancelled, no replacement ("shut down actually don't") -> action="none"
+
+COMPOUND ("and then"/"and also"/"and"): ONE command per response. Take the
+FIRST, drop the rest. ("open Chrome and then minimize it" -> just open chrome)
+
+CANONICAL ACTIONS (exact, never renamed):
+open, close, start_project, stop_project, run_script,
+list_running_processes, show_history, delete_history,
+create_alias, delete_alias, list_aliases, delete_all_aliases, run_alias,
+volume_up, volume_down, mute_volume, unmute_volume, set_volume,
+brightness_up, brightness_down, set_brightness,
+focus_window, minimize_window, maximize_window, snap_window,
+sleep_system, lock_system, restart_system, shutdown_system,
+get_clipboard, set_clipboard, clear_clipboard,
+list_monitors, move_window_to_monitor, none
+
+INTENT MAP (pattern -> action):
+open/launch/start up/get X running -> open
+close/quit/exit/shut X -> close
+start project X -> start_project | stop project X -> stop_project
+run/execute script X -> run_script
+switch to/focus on X -> focus_window | minimize X -> minimize_window
+maximize/full screen X -> maximize_window
+snap X left/right -> snap_window {"direction":"left"/"right"}
+move X to Nth monitor -> move_window_to_monitor {"monitor":N}
+volume up/raise/increase -> volume_up | down/lower/decrease -> volume_down
+mute -> mute_volume | unmute -> unmute_volume
+set volume to N -> set_volume {"level":N}
+brighter/turn up brightness -> brightness_up | darker/down -> brightness_down
+set brightness to N -> set_brightness {"level":N} (only if number given)
+clipboard read/check -> get_clipboard | clear/empty -> clear_clipboard
+create alias X for A,B,C -> create_alias target=X {"alias_for":["A","B","C"]}
+delete alias X -> delete_alias | list aliases -> list_aliases
+clear all aliases -> delete_all_aliases
+run/start my [alias] setup, or bare name matching context.targets.aliases
+  -> run_alias target=alias name
+lock computer -> lock_system | sleep computer -> sleep_system
+restart computer -> restart_system | shutdown computer -> shutdown_system
+list processes -> list_running_processes | list monitors -> list_monitors
+show history -> show_history | clear history -> delete_history
+
+TARGET: literal object acted on. Strip filler anywhere (leading/trailing/
+middle): can you/could you/please/my/the/that/for me/project/script.
+  "boot up the hand tracking project" -> target="hand tracking"
+Never use "it"/"that" as target.
+
+NO-TARGET ACTIONS (target always null): volume_up, volume_down, mute_volume,
+unmute_volume, set_volume, brightness_up, brightness_down, set_brightness,
+get_clipboard, set_clipboard, clear_clipboard, list_aliases,
+delete_all_aliases, list_running_processes, list_monitors, show_history,
+delete_history, sleep_system, lock_system, restart_system, shutdown_system, none
+
+PARAMETERS: only include a key if mentioned — never send null, omit instead.
+"with" -> websites. "second"/"third monitor" -> {"monitor":2/3}.
+Numeric volume/brightness -> {"level":N}. Snap -> {"direction":"left"/"right"}.
+Combine when multiple given in one utterance.
+
+HISTORY/REPEAT ("again"/"it again"/"same thing"/"once more", no new target):
+target=null, ALWAYS include "history":true plus anything new mentioned.
+  "open it again" -> open, target=null, {"history":true}
+  No verb at all ("do that again") -> action="again", {"history":true}
+  New/different target named -> NOT history, treat as fresh command.
+
+Match intent flexibly, output canonical action names exactly. No target on
+no-target actions. Never "it"/"that" as target. Output ONLY the JSON object.
+"""
+
 
 # ============================================================
 # Context
@@ -392,6 +478,9 @@ def build_context():
 
 def interpret(user_input):
     context = build_context()
+    context_json = json.dumps(context, indent=2)
+    print(f"[context size] {len(context_json)} chars")
+
 
     prompt = f"""
         Available assistant context:
@@ -417,6 +506,7 @@ def interpret(user_input):
                 }
             ],
             temperature=0,
+            reasoning_effort="low",
             response_format={"type": "json_object"}
         )
         response = raw_response.parse()
@@ -450,3 +540,4 @@ def interpret(user_input):
         }
 
     return result
+    
