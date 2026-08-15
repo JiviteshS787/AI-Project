@@ -19,8 +19,38 @@ llama-3.1-8b-instant -> yet to test with new prompt
 #MODEL = "llama-3.1-8b-instant"
 MODEL = "openai/gpt-oss-20b"
 
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+API_KEYS = []
+raw_keys = [os.environ.get("GROQ_API_KEY"), os.environ.get("GROQ_API_KEY_2")]
+for key in raw_keys:
+    if key:
+        API_KEYS.append(key)
+if not API_KEYS:
+    raise RuntimeError("No Groq API keys found. Set GROQ_API_KEY_1 (and optionally GROQ_API_KEY_2).")
+
+_current_key_index = 0
+
+
+def _build_client():
+    return Groq(api_key=API_KEYS[_current_key_index])
+
+client = _build_client()
 tracker = UsageTracker()
+
+def _switch_to_next_key():
+    """Rotate to the next available API key. Returns False if no more keys left."""
+    global _current_key_index, client
+    if _current_key_index + 1 >= len(API_KEYS):
+        return False
+    _current_key_index += 1
+    client = _build_client()
+    print(f"[key rotation] Switched to API key #{_current_key_index + 1}")
+    return True
+
+'''
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+tracker = UsageTracker()
+'''
 
 # ============================================================
 # Import assistant data
@@ -235,40 +265,55 @@ def interpret(user_input):
         {user_input}
     """
 
-    try:
-        raw_response = client.chat.completions.with_raw_response.create(
-            model=MODEL,
-            messages=[
-                {
-                    "role": "system",
-                    "content": SYSTEM_PROMPT
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0,
-            reasoning_effort="low",
-            response_format={"type": "json_object"}
-        )
-        response = raw_response.parse()
+    attempts_left = len(API_KEYS)
+    while attempts_left > 0:
+        try:
+            raw_response = client.chat.completions.with_raw_response.create(
+                model=MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": SYSTEM_PROMPT
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0,
+                reasoning_effort="low",
+                response_format={"type": "json_object"}
+            )
+            response = raw_response.parse()
 
-        tracker.record(
-            model=MODEL,
-            headers=dict(raw_response.headers),
-            prompt_tokens=response.usage.prompt_tokens,
-            completion_tokens=response.usage.completion_tokens,
-        )
+            tracker.record(
+                model=MODEL,
+                headers=dict(raw_response.headers),
+                prompt_tokens=response.usage.prompt_tokens,
+                completion_tokens=response.usage.completion_tokens,
+            )
 
-        print(f"[tokens] prompt={response.usage.prompt_tokens} "
-              f"completion={response.usage.completion_tokens} "
-              f"total={response.usage.total_tokens}")
-        
-    except Exception as e:
+            print(f"[tokens] prompt={response.usage.prompt_tokens} "
+                f"completion={response.usage.completion_tokens} "
+                f"total={response.usage.total_tokens}")
+
+            break
+            
+        except Exception as e:
+            is_rate_limit = "rate_limit_exceeded" in str(e) or "429" in str(e)
+
+            if is_rate_limit and _switch_to_next_key():
+                attempts_left -= 1
+                continue
+
+            return {
+                "error": "Groq request failed",
+                "details": str(e)
+            }
+    else:
         return {
-            "error": "Groq request failed",
-            "details": str(e)
+            "error": "All API keys exhausted",
+            "details": "Every configured Groq API key hit its rate limit."
         }
 
     response_text = response.choices[0].message.content.strip()

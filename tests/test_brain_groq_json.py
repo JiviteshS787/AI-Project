@@ -3,81 +3,7 @@ import time
 from assistant.brain.brain import validate_command
 from assistant.brain.brain_groq_json import interpret, MODEL, SYSTEM_PROMPT
 
-
 '''
-TESTS = [
-    # --- OPEN / CLOSE ---
-    ("Open Chrome", "open chrome"),
-    ("Natural Chrome launch", "can you launch Chrome for me?"),
-    ("Get Chrome running", "get chrome up for me"),
-    ("Close Chrome", "close chrome"),
-    ("Quit Chrome", "quit chrome"),
-    ("Exit Chrome", "exit chrome"),
-
-    # --- PROJECTS ---
-    ("Start hand tracking", "start hand tracking"),
-    ("Boot hand tracking", "boot up the hand tracking project"),
-    ("Stop hand tracking", "stop the hand tracking project"),
-
-    # --- SCRIPTS ---
-    ("Run hello", "run hello"),
-    ("Run hello naturally", "can you run that hello script for me?"),
-
-    # --- WINDOW CONTROL ---
-    ("Switch to Chrome", "switch over to Chrome"),
-    ("Focus Chrome", "focus on Chrome"),
-    ("Minimize Chrome", "minimize Chrome"),
-    ("Maximize Chrome", "maximize Chrome"),
-    ("Snap left", "snap Chrome to the left"),
-    ("Move to monitor", "move Chrome to my second monitor"),
-
-    # --- PARAMETERS ---
-    ("Chrome with websites", "open chrome with youtube and netflix"),
-    ("Chrome monitor 2", "open chrome on my second monitor"),
-    ("Chrome monitor 2 and youtube", "open chrome on my second monitor with youtube"),
-
-    # --- VOLUME ---
-    ("Volume up", "turn it up"),
-    ("Volume down", "turn the volume down"),
-    ("Mute", "mute the volume"),
-    ("Unmute", "unmute the volume"),
-    ("Set volume", "set the volume to 50"),
-
-    # --- BRIGHTNESS ---
-    ("Brightness up", "make the screen brighter"),
-    ("Brightness down", "make the screen darker"),
-    ("Set brightness", "set the brightness to 70"),
-
-    # --- CLIPBOARD ---
-    ("Clipboard question", "what's in my clipboard"),
-    ("Read clipboard alt", "read my clipboard"),
-    ("Clear clipboard", "clear my clipboard"),
-
-    # --- ALIASES ---
-    ("Create alias", "create alias school for Outlook, Chrome and OneNote"),
-    ("Delete alias", "delete alias school"),
-    ("List aliases", "show me my aliases"),
-    ("Clear aliases", "clear all aliases"),
-
-    # --- SYSTEM ---
-    ("Lock computer", "lock my computer"),
-    ("Sleep computer", "put my computer to sleep"),
-    ("Restart computer", "restart my computer"),
-    ("Shutdown computer", "shutdown my computer"),
-
-    # --- LISTING ---
-    ("List processes", "list running processes"),
-    ("List monitors", "what monitors are available"),
-
-    # --- HISTORY ---
-    ("Repeat", "do that again"),
-    ("Open again", "open it again"),
-    ("Run again", "run again"),
-    ("Start again", "start again"),
-]
-'''
-
-
 TESTS = [
     # --- OPEN / CLOSE ---
     ("Open natural", "can you go ahead and bring Chrome up"),
@@ -147,32 +73,17 @@ TESTS = [
     ("History Test 2", "Lets open that again"),
     ("History Test 3", "Could you repeat that again, thanks")
 ]
-
-
 '''
+
 TESTS = [
-    # --- PREVIOUSLY TESTED & FAILED/FLAGGED ---
-    ("Run script natural", "can you go ahead and run hello"),
-    ("Run alias direct", "school"),
-    ("Run alias natural", "can you start my school setup"),
-    ("Shutdown correction", "shut down my computer actually don't"),
-    ("History", "Could you uh run it again"),
-    ("History Test 3", "Could you repeat that again, thanks"),
+    ("Open folder", "can we get my downloads up"),
+    ("Close folder", "Im done with documents and downloads close them up"),
 
-    # --- CORRECTION MARKER TESTS (ADDED) ---
-    ("Correction app", "open Chrome wait no Notion"),
-    ("Correction action", "close Chrome no wait minimize Chrome"),
-    ("Correction monitor", "open Chrome on my second monitor actually third monitor"),
-    ("Correction multiple", "open Chrome on monitor two with YouTube no wait monitor three with Netflix"),
-    ("Volume correction", "turn the volume down wait no turn it up"),
-    ("Brightness correction", "make it brighter actually darker"),
-    ("Power correction", "restart my computer wait no lock it"),
-    ("Complex correction", "open Chrome on monitor two with YouTube actually no monitor three with Netflix")
+    ("Monitor listing", "What are my avaliable monitors"),
+
+    ("Show history", "Pull up my history, I want to see it"),
+    ("Clear history", "Get rid of my history please")
 ]
-
-'''
-
-
 
 WAIT_TIME = 20
 
