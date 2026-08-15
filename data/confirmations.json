@@ -37,5 +37,8 @@
     "sleep_system": "Going to sleep",
     "lock_system": "Locking system",
     "restart_system": "Restarting",
-    "shutdown_system": "Shutting down"
+    "shutdown_system": "Shutting down",
+
+    "list_monitors": "Listing available monitors",
+    "move_window_to_monitor": "Moving Window"
 }

@@ -21,7 +21,7 @@ def find_action(words, index=0):
 
     # Similar word matching
     if index < len(words):
-        match = get_close_matches(words[index], action_keys, n=1, cutoff=0.7)
+        match = get_close_matches(words[index], action_keys, n=1, cutoff=0.73)
 
     if match:
         #print(f"Similar match: {match[0]}")

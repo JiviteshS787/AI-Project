@@ -16,6 +16,7 @@ with open("data/files.json", "r") as file:
 
 openables = {**apps, **files}
 
+
 while True:
     print("> ", end="", flush=True)
     user_input = input().lower().strip()
@@ -69,5 +70,3 @@ while True:
                     execute(cmd)
     
     #print("\n")
-
-        

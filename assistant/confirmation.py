@@ -61,6 +61,13 @@ def format_command(command):
 
         return text
 
+    if action == 'move_window_to_monitor':
+        move = parameters.get("monitor")
+
+        text = f"{action_text}: {target_text} to monitor {move}"
+
+        return text
+
     # Actions with no target
     if not target:
         return action_text

@@ -3,7 +3,7 @@ import subprocess, json, os, pygetwindow as gw
 from assistant.process_manager import start_process, stop_process, list_running_processes
 from assistant.app_manager import open_app as launch_app, close_app as terminate_app
 
-from assistant.system_tools import move_window_to_monitor
+from assistant.system_tools.window import move_window_to_monitor
 
 #Load in json files
 with open("data/apps.json") as file:

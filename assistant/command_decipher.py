@@ -4,7 +4,7 @@ from assistant.history import find_action_type, load_history
 
 from assistant.command_actions import find_action
 from assistant.command_matcher import find_match
-from assistant.command_parser import find_target, find_targets, find_parameters, find_aliases, find_monitors
+from assistant.command_parser import find_target, find_targets, find_parameters, find_aliases
 from assistant.alias_manager import load_aliases, valid_alias_name
 
 #Convert JSONs to py dicts
@@ -128,7 +128,6 @@ def decipher(user_input):
     action_index = action_info[1]
     #print(f"Action: {action}, Action-index: {action_index}")
 
-
     #######################################
     # Open and Close Apps, Files, Aliases #
     #######################################
@@ -168,6 +167,8 @@ def decipher(user_input):
 
             if openables[item]["type"] == "app":
                 item_parameters = filter_parameters(item, target["parameters"], openables)
+            if openables[item]["type"] == "file":
+                item_parameters = filter_parameters(item, target["parameters"], openables)
 
             #Add to commands to execute
             commands.append(return_command("open", item, item_parameters))
@@ -196,7 +197,7 @@ def decipher(user_input):
         commands = []
 
         for target in targets:
-            alias_command = check_alias(target["target"], inverted = True)
+            alias_command = check_alias(target["target"], inverse = True)
 
             if alias_command:
                 commands.extend(alias_command)
@@ -477,4 +478,50 @@ def decipher(user_input):
 
         return return_command("set_clipboard", parameters={"text": text})
 
+
+    #######################################
+    #         Monitor Control             #
+    #######################################
+    elif action == "list_monitors":
+        return return_command("list_monitors")
+
+    elif action == "move_window_to_monitor":
+        remaining = words[action_index:]
+
+        if not remaining:
+            print("Format: move <window> to monitor <number>")
+            return None
+
+        monitor_number = None
+        number_words = {"first": 1, "second": 2, "third": 3, "fourth": 4}
+
+        for i, word in enumerate(remaining):
+            if word.isdigit():
+                monitor_number = int(word)
+                monitor_index = i
+                break
+            elif word in number_words:
+                monitor_number = number_words[word]
+                monitor_index = i
+                break
+
+        if not monitor_number:
+            print("Specify monitor number")
+            return None
+
+        window_words = remaining[:monitor_index]
+
+        window_words = [w for w in window_words if w not in ["to", "monitor"]]
+
+        if not window_words:
+            print("Specify window name")
+            return None
+
+        window_name = " ".join(window_words)
+
+        return return_command(
+            "move_window_to_monitor",
+            window_name,
+            {"monitor": monitor_number}
+        )
     return None

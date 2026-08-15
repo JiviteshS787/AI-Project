@@ -161,6 +161,7 @@ def split_commands(user_input):
     i = 0
     while i < len(words):
         word = words[i]
+        #print(f"Word:{word}")
         action_info = find_action(words, i)
 
         if action_info[0] and action_info[1] > 1:
@@ -170,6 +171,7 @@ def split_commands(user_input):
             continue
 
         if action_info[0] and current:
+            #print(f"Action found: {action_info[0]}, Word: {word}")
             previous_action = find_action(words, 0)
 
             if action_info[0] != previous_action[0]:
@@ -194,6 +196,7 @@ def split_commands(user_input):
     if current:
         commands.append(" ".join(current))
 
+    #print(f"Commands: {commands}")
     return commands
 
 
