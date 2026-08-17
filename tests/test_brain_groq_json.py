@@ -75,26 +75,44 @@ TESTS = [
 ]
 '''
 
+
 TESTS = [
-    ("Open folder", "can we get my downloads up"),
-    ("Close folder", "Im done with documents and downloads close them up"),
+    # --- Known app mistaken for website ---
+    ("App mistaken for website", "open chrome with youtube and notion on monitor 2"),
+    ("App mistaken for website, reordered", "open chrome on monitor two with spotify and outlook"),
+    ("Known app as second item", "launch chrome with gmail and slack"),
+    ("Only known apps, no real websites", "open chrome with notion and onenote"),
 
-    ("Monitor listing", "What are my avaliable monitors"),
+    # --- Genuine websites only (control cases — should NOT regress) ---
+    ("Pure websites control", "open chrome with youtube and netflix"),
+    ("Pure websites three", "launch chrome with youtube netflix and gmail"),
 
-    ("Show history", "Pull up my history, I want to see it"),
-    ("Clear history", "Get rid of my history please")
+    # --- Mixed: one real website, one real app ---
+    ("Mixed website and app", "open chrome with youtube and open notion too"),
+    ("Mixed explicit and", "open chrome with youtube and also start notion"),
+
+    # --- Ambiguous single word after "with" ---
+    ("Single ambiguous target", "open chrome with notion"),
+    ("Single ambiguous target 2", "open chrome with discord"),
+
+    # --- App name that's also a plausible website ---
+    ("App/website overlap word", "open chrome with spotify"),
+    ("App/website overlap on monitor", "open chrome with spotify on my second monitor"),
+
+    # --- Compound phrasing forcing two opens ---
+    ("Explicit two opens with monitor", "open chrome and notion on monitor 2"),
+    ("Explicit two opens, no with", "open chrome and spotify"),
+
+    # --- Parameter Distribution ---
+    ("Parameter test", "Open chrome with youtube, open notion on monitor 2")
 ]
 
-WAIT_TIME = 20
+
+WAIT_TIME = 35
 
 
 def main():
     #print(f"[prompt size] {len(SYSTEM_PROMPT)} chars")
-
-    if "llama" in MODEL or "120" in MODEL:
-        WAIT_TIME = 30
-    else:
-        WAIT_TIME = 20
 
     total = len(TESTS)
     passed = 0

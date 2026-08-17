@@ -176,6 +176,37 @@ Combine when multiple given in one utterance.
 NEVER CREATE YOUR OWN PARAMETERS, only use:
 monitor, history, alias_for, direction, level, websites
 
+    WEBSITE VS APP DISAMBIGUATION (words after "with"):
+    Before adding a word to "websites", check it against context.targets.apps, context.targets.files,
+    context.synonyms.apps and context.synonyms.files
+    (the list of known app names in the provided context). If it matches a
+    known app/file, it is NOT a website — it means the speaker also wants that
+    app opened, as a SEPARATE command in "commands". Only words that do NOT
+    match a known app should go into "websites".
+    Given context.targets.apps includes "notion":
+    "open chrome with youtube and notion" ->
+        {"commands":[
+        {"action":"open","target":"chrome","parameters":{"websites":["youtube"]}},
+        {"action":"open","target":"notion","parameters":{}}
+        ]}
+    "open chrome with youtube and netflix" (neither is a known app) ->
+        {"commands":[{"action":"open","target":"chrome","parameters":{"websites":["youtube","netflix"]}}]}
+    If a monitor was specified for the original "open chrome" command, do NOT
+    apply that same monitor to the second app unless it was also mentioned
+    for that app specifically.
+
+    PARAMETER DISTRIBUTION:
+    "open chrome with youtube and notion on monitor 2"->
+        {"commands":[
+        {"action":"open","target":"chrome","parameters":{"websites":["youtube"]}},
+        {"action":"open","target":"notion","parameters":{"monitor": 2}}
+        ]}
+    "open chrome and notion on monitor 2" ->
+        {"commands": [
+        {"action":"open","target":"chrome","parameters":{"monitor":2}},
+        {"action":"open","target":"notion","parameters":{"monitor":2}}
+        ]}
+
 HISTORY/REPEAT ("again"/"it again"/"same thing"/"once more", no new target):
 target=null, ALWAYS include "history":true plus anything new mentioned.
 This always results in exactly ONE command in "commands".

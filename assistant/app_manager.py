@@ -7,13 +7,13 @@ def open_app(command, app_name):
     Open a normal installed application
     '''
 
-    subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    subprocess.Popen(command, creationflags=subprocess.CREATE_NO_WINDOW, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     print(f"{app_name} => opened\n")
 
     return True
 
-
+    
 def close_app(process_name):
     '''
     Close application by process name

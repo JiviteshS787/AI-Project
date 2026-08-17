@@ -127,14 +127,86 @@
                 "monitor": 1
             },
             "time": "2026-08-15 19:00:50"
+        },
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {},
+            "time": "2026-08-17 12:34:15"
+        },
+        {
+            "action": "open",
+            "target": "downloads",
+            "parameters": {},
+            "time": "2026-08-17 12:34:28"
+        },
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {},
+            "time": "2026-08-17 12:36:06"
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 13:29:18"
+        },
+        {
+            "action": "open",
+            "target": "documents",
+            "parameters": {},
+            "time": "2026-08-17 15:14:36"
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 15:14:36"
+        },
+        {
+            "action": "focus_window",
+            "target": "documents",
+            "parameters": {},
+            "time": "2026-08-17 15:14:36"
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 16:11:18"
+        },
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {
+                "monitor": 2
+            },
+            "time": "2026-08-17 16:11:40"
+        },
+        {
+            "action": "maximize_window",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 16:13:31"
+        },
+        {
+            "action": "focus_window",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 16:13:46"
+        },
+        {
+            "action": "run_script",
+            "target": "hello",
+            "parameters": {},
+            "time": "2026-08-17 16:16:20"
         }
     ],
     "last_action": {
-        "action": "move_window_to_monitor",
-        "target": "documents",
-        "parameters": {
-            "monitor": 1
-        },
-        "time": "2026-08-15 19:00:50"
+        "action": "run_script",
+        "target": "hello",
+        "parameters": {},
+        "time": "2026-08-17 16:16:20"
     }
 }

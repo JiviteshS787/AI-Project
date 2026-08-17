@@ -27,6 +27,8 @@ with open("data/file_synonyms.json", "r") as file:
 with open("data/aliases.json", "r") as file:
     aliases = json.load(file)
 
+openable = {**apps, **files, **synonyms, **file_synonyms}
+
 
 # ============================================================
 # Ollama
@@ -270,6 +272,10 @@ def validate_command(command):
 
     if not isinstance(parameters, dict):
         return False, "Parameters must be an object"
+
+    for parameter in parameters:
+        if parameter in openable:
+            return False, "Apps/files cannot be parameters" 
 
     # History command is explicitly marked by the LLM.
     history_command = parameters.get("history") is True
