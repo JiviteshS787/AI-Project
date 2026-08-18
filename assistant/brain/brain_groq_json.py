@@ -207,18 +207,35 @@ monitor, history, alias_for, direction, level, websites
         {"action":"open","target":"notion","parameters":{"monitor":2}}
         ]}
 
-HISTORY/REPEAT ("again"/"it again"/"same thing"/"once more", no new target):
-target=null, ALWAYS include "history":true plus anything new mentioned.
-This always results in exactly ONE command in "commands".
+HISTORY/REPEAT: triggered whenever the speaker refers to a window/item by
+PRONOUN ("it"/"that"/"this") instead of naming it, OR by "again"/"same
+thing"/"once more", AND does not name a fresh target. In ALL these cases:
+target=null, ALWAYS include "history":true, plus anything else mentioned
+in the sentence (monitor, websites, direction, level, etc). This always
+results in exactly ONE command in "commands".
+
   "open it again" -> {"commands":[{"action":"open","target":null,"parameters":{"history":true}}]}
   "run it again" -> {"commands":[{"action":"run_script","target":null,"parameters":{"history":true}}]}
   ("run" is a real action verb from the INTENT MAP — map it normally, do NOT
   use "again" just because the word "again" also appears in the sentence)
+
+  Bare pronoun with a real action verb, no "again" needed:
+  "shift it to the left" -> {"commands":[{"action":"snap_window","target":null,"parameters":{"history":true,"direction":"left"}}]}
+  "move it to monitor 2" -> {"commands":[{"action":"move_window_to_monitor","target":null,"parameters":{"history":true,"monitor":2}}]}
+  "focus it" -> {"commands":[{"action":"focus_window","target":null,"parameters":{"history":true}}]}
+
+  History combined with other new parameters (e.g. websites) still keeps
+  everything in ONE command with history:true — do not drop the extra
+  parameters just because no fresh target was named:
+  "open it again with youtube and netflix" ->
+    {"commands":[{"action":"open","target":null,"parameters":{"history":true,"websites":["youtube","netflix"]}}]}
+
   No verb at all, or only a non-canonical filler-verb like "repeat"/"do that"
   ("do that again", "repeat that again") ->
     {"commands":[{"action":"again","target":null,"parameters":{"history":true}}]}
   ("repeat" is NOT a canonical action from the INTENT MAP, so this falls
   under the no-verb case, not a fresh action)
+
   New/different target named -> NOT history, treat as fresh command.
 
 Match intent flexibly, output canonical action names exactly. No target on

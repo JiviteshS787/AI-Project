@@ -220,19 +220,10 @@ __marimo__/
 # Local Groq usage tracking data (machine-specific, not for version control)
 assistant/monitor/.groq_usage.json
 
-#Test audio file
-test_audio.m4a
-
-#For testing only
-system_prompt.txt
-
-#Different version of brain.py file, returns [action][target][parameters] in english format, not JSON
-test_brain_command_return.txt
-
-test_results-gpt-oss-20b.txt
-
 assistant/brain/brain_groq_json_key_rotation.py
 
 tests/window_find.py
 
 groq_test.py
+
+groq_test_2.py

@@ -116,8 +116,11 @@ TESTS = [
     ("Opening", "Open it again with youtube and netflix"),
     ("Opening", "Open it again on monitor 2"),
 
-    ("Repeating", "Repeat that")
+    ("Repeating", "Repeat that"),
+
+    ("Focus test", "Focus that please")
 ]
+
 
 WAIT_TIME = 35
 

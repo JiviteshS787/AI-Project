@@ -75,7 +75,7 @@ def get_monitors_info():
 #New find window replacement
 
 def _clean_title(title: str) -> str:
-    # Strip emoji/symbols, collapse whitespace, lowercase
+    # Remove emoji/symbols, collapse whitespace, lowercase
     title = re.sub(r'[^\w\s\-]', ' ', title, flags=re.UNICODE)
     return re.sub(r'\s+', ' ', title).strip().lower()
 
