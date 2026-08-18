@@ -75,7 +75,7 @@ TESTS = [
 ]
 '''
 
-
+'''
 TESTS = [
     # --- Known app mistaken for website ---
     ("App mistaken for website", "open chrome with youtube and notion on monitor 2"),
@@ -106,7 +106,18 @@ TESTS = [
     # --- Parameter Distribution ---
     ("Parameter test", "Open chrome with youtube, open notion on monitor 2")
 ]
+'''
 
+TESTS = [
+    #History testing
+    ("Moving", "Shift it to the left"),
+    ("Moving monitors", "Move it to monitor 2"),
+
+    ("Opening", "Open it again with youtube and netflix"),
+    ("Opening", "Open it again on monitor 2"),
+
+    ("Repeating", "Repeat that")
+]
 
 WAIT_TIME = 35
 
@@ -198,3 +209,92 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+'''
+======================================================================
+AI ASSISTANT — GPT-OSS-20b — VALIDATION TEST
+======================================================================
+----------------------------------------------------------------------
+TEST 1/5: Moving
+Input: Shift it to the left
+
+[context size] 1896 chars
+[tokens] prompt=2957 completion=91 total=3048
+LLM Output:
+[{'action': 'snap_window', 'target': None, 'parameters': {'direction': 'left'}}]
+FAIL
+Reason: snap_window requires a target
+Request time: 1.168 seconds
+Validity check time: 0.001 seconds
+
+Waiting 35s...
+
+----------------------------------------------------------------------
+TEST 2/5: Moving monitors
+Input: Move it to monitor 2
+
+[context size] 1896 chars
+[tokens] prompt=2958 completion=313 total=3271
+LLM Output:
+[{'action': 'move_window_to_monitor', 'target': None, 'parameters': {'monitor': 2}}]
+FAIL
+Reason: move_window_to_monitor requires a target
+Request time: 0.795 seconds
+Validity check time: 0.000 seconds
+
+Waiting 35s...
+
+----------------------------------------------------------------------
+TEST 3/5: Opening
+Input: Open it again with youtube and netflix
+
+[context size] 1896 chars
+[tokens] prompt=2959 completion=121 total=3080
+LLM Output:
+[{'action': 'open', 'target': None, 'parameters': {'history': True}}]
+
+PASS
+Request time: 0.639 seconds
+Validity check time: 0.000 seconds
+
+Waiting 35s...
+
+----------------------------------------------------------------------
+TEST 4/5: Opening
+Input: Open it again on monitor 2
+
+[context size] 1896 chars
+[tokens] prompt=2959 completion=131 total=3090
+LLM Output:
+[{'action': 'open', 'target': None, 'parameters': {'history': True, 'monitor': 2}}]
+
+PASS
+Request time: 0.839 seconds
+Validity check time: 0.000 seconds
+
+Waiting 35s...
+
+----------------------------------------------------------------------
+TEST 5/5: Repeating
+Input: Repeat that
+
+[context size] 1896 chars
+[tokens] prompt=2954 completion=100 total=3054
+LLM Output:
+[{'action': 'again', 'target': None, 'parameters': {'history': True}}]
+FAIL
+Reason: Invalid action: again
+Request time: 0.636 seconds
+Validity check time: 0.000 seconds
+
+======================================================================
+RESULTS
+======================================================================
+Total:   5
+Passed:  2
+Failed:  3
+Runtime: 4.08s
+Average: 0.82s/test
+======================================================================
+'''

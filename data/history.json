@@ -1,24 +1,6 @@
 {
     "history": [
         {
-            "action": "sleep_system",
-            "target": null,
-            "parameters": {},
-            "time": "2026-08-08 20:24:22"
-        },
-        {
-            "action": "lock_system",
-            "target": null,
-            "parameters": {},
-            "time": "2026-08-08 20:28:38"
-        },
-        {
-            "action": "open",
-            "target": "chrome",
-            "parameters": {},
-            "time": "2026-08-15 17:59:33"
-        },
-        {
             "action": "focus_window",
             "target": "chrome",
             "parameters": {},
@@ -201,12 +183,102 @@
             "target": "hello",
             "parameters": {},
             "time": "2026-08-17 16:16:20"
+        },
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 16:30:37"
+        },
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {},
+            "time": "2026-08-17 19:57:29"
+        },
+        {
+            "action": "close",
+            "target": "notion",
+            "parameters": {},
+            "time": "2026-08-17 19:57:36"
+        },
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {},
+            "time": "2026-08-17 19:57:42"
+        },
+        {
+            "action": "snap_window",
+            "target": "notion to",
+            "parameters": {
+                "direction": "left"
+            },
+            "time": "2026-08-17 19:57:56"
+        },
+        {
+            "action": "snap_window",
+            "target": "notion",
+            "parameters": {
+                "direction": "left"
+            },
+            "time": "2026-08-17 19:58:05"
+        },
+        {
+            "action": "open",
+            "target": "documents",
+            "parameters": {},
+            "time": "2026-08-17 19:58:32"
+        },
+        {
+            "action": "snap_window",
+            "target": "documents",
+            "parameters": {
+                "direction": "right"
+            },
+            "time": "2026-08-17 19:58:45"
+        },
+        {
+            "action": "snap_window",
+            "target": "chrome",
+            "parameters": {
+                "direction": "left"
+            },
+            "time": "2026-08-17 19:58:45"
+        },
+        {
+            "action": "focus_window",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 19:58:54"
+        },
+        {
+            "action": "maximize_window",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 19:59:13"
+        },
+        {
+            "action": "minimize_window",
+            "target": "chrome",
+            "parameters": {},
+            "time": "2026-08-17 19:59:13"
+        },
+        {
+            "action": "move_window_to_monitor",
+            "target": "documents",
+            "parameters": {
+                "monitor": 2
+            },
+            "time": "2026-08-17 19:59:53"
         }
     ],
     "last_action": {
-        "action": "run_script",
-        "target": "hello",
-        "parameters": {},
-        "time": "2026-08-17 16:16:20"
+        "action": "move_window_to_monitor",
+        "target": "documents",
+        "parameters": {
+            "monitor": 2
+        },
+        "time": "2026-08-17 19:59:53"
     }
 }
