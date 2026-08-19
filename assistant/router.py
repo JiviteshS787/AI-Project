@@ -202,4 +202,3 @@ def execute(function): #function is a JSON obj, action and target are the attrib
 
     else:
         print("Unknown action")
-

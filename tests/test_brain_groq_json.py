@@ -109,16 +109,7 @@ TESTS = [
 '''
 
 TESTS = [
-    #History testing
-    ("Moving", "Shift it to the left"),
-    ("Moving monitors", "Move it to monitor 2"),
-
-    ("Opening", "Open it again with youtube and netflix"),
-    ("Opening", "Open it again on monitor 2"),
-
-    ("Repeating", "Repeat that"),
-
-    ("Focus test", "Focus that please")
+    ("Open again", "Focus chrome on monitor 2")
 ]
 
 

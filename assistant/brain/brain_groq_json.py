@@ -172,9 +172,19 @@ delete_history, sleep_system, lock_system, restart_system, shutdown_system, none
 PARAMETERS: only include a key if mentioned — never send null, omit instead.
 "with" -> websites. "second"/"third monitor" -> {"monitor":2/3}.
 Numeric volume/brightness -> {"level":N}. Snap -> {"direction":"left"/"right"}.
+Setting clipboard, copying something -> {"text": "copied text"}
 Combine when multiple given in one utterance.
 NEVER CREATE YOUR OWN PARAMETERS, only use:
-monitor, history, alias_for, direction, level, websites
+monitor, history, alias_for, direction, level, websites, text
+
+    COPY TEXT PARAMETERS
+    copy X to clipboard / set clipboard to X -> set_clipboard {"text":"X"}
+    "could you copy hello my name is jivitesh to my clipboard" ->
+        {"commands":[{"action":"set_clipboard","target":null,"parameters":{"text":"hello my name is jivitesh"}}]}
+    "copy link https monkey.com" ->
+        {"commands":[{"action":"set_clipboard","target":null,"parameters":{"text":"https://monkey.com"}}]}
+    Capture the FULL literal text/phrase/link the speaker wants copied — do not
+    summarize, shorten, or paraphrase it.
 
     WEBSITE VS APP DISAMBIGUATION (words after "with"):
     Before adding a word to "websites", check it against context.targets.apps, context.targets.files,

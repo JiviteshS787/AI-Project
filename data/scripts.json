@@ -2,6 +2,9 @@
     "hello": {
         "type": "script",
         "python": "C:\\Users\\jivit\\AI_Project\\AI-Project\\venv\\Scripts\\python.exe",
-        "file": "C:\\Users\\jivit\\AI_Project\\AI-Project\\manual_testing\\hello.py"
+        "file": "C:\\Users\\jivit\\AI_Project\\AI-Project\\manual_testing\\hello.py",
+        "accepted_parameters": {
+            "monitor": true
+        }
     }
 }

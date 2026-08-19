@@ -1,16 +1,79 @@
 import queue
 import numpy as np
 import sounddevice as sd
+import json
 import webrtcvad
+
+from assistant.history import load_history
+from assistant.alias_manager import load_aliases
 
 from assistant.router import execute
 from assistant.confirmation import confirm_command
 from assistant.brain.brain_groq_json import interpret
 
+
 from faster_whisper import WhisperModel
 
-from assistant.command_decipher import openables
+from assistant.brain.brain_groq_json import apps, files, projects, scripts, aliases
 
+
+def get_all_files():
+    aliases = load_aliases()
+    return {**apps, **files, **projects, **scripts, **aliases}
+
+def get_open_and_close():
+    aliases = load_aliases()
+    return {**apps, **files, **aliases}
+
+def get_window_control():
+    aliases = load_aliases()
+    return {**apps, **files, **projects, **aliases}
+
+def get_openables():
+    return {**apps, **files, **projects, **scripts}
+
+def get_target_actions():
+    open_and_close = get_open_and_close()
+    window_control = get_window_control()
+    return {
+        "open": open_and_close,
+        "close": open_and_close,
+        "start_project": projects,
+        "stop_project": projects,
+        "run_script": scripts,
+        "delete_aliases": load_aliases(),
+        "focus_window": window_control,
+        "maximize_window": window_control,
+        "minimize_window": window_control,
+        "snap_window": window_control,
+        "move_window_to_monitor": window_control,
+    }
+
+NO_TARGET_ACTIONS = { 
+    "list_running_processes": [],
+    "show_history": [],
+    "delete_history": [],
+    "list_aliases": [],
+    "delete_all_aliases": [],
+    "volume_up": [], 
+    "volume_down": [], 
+    "mute_volume": [],
+    "unmute_volume": [],
+    "set_volume": ["level"],
+    "brightness_up": [],
+    "brightness_down": [],
+    "set_brightness": ["level"],
+    "sleep_system": [],
+    "lock_system": [],
+    "shutdown_system": [],
+    "restart_system": [],
+    "get_clipboard": [],
+    "set_clipboard": ["text"],
+    "clear_clipboard": [],
+    "list_monitors": []
+}
+
+#handle -> again, create_alias, none
 
 # ---------- config ----------
 SAMPLE_RATE = 16000
@@ -124,7 +187,13 @@ def parse_input(input):
         else:
             all_commands = interpreted_commands
             for command in all_commands:
-                if validate_command(command):
+                parameters = command.get("parameters") or {}
+                if parameters.get("history") is True:
+                    resolved = history_check(command)
+                    if resolved:
+                        valid_commands.append(resolved)
+
+                elif validate_command(command):
                     valid_commands.append(command)
 
         if all_commands:
@@ -133,20 +202,116 @@ def parse_input(input):
                     execute(cmd)
     return
 
+
+def get_accepted_parameters(action, target):
+    TARGET_ACTIONS = get_target_actions()
+
+    if action in NO_TARGET_ACTIONS:
+        return NO_TARGET_ACTIONS[action]
+    if action in TARGET_ACTIONS:
+        entry = TARGET_ACTIONS[action].get(target, {})
+        return list(entry.get("accepted_parameters", {}).keys())
+    return []
+
+
+def history_check(command):
+    history = load_history()
+
+    action = command.get("action")
+    parameters = command.get("parameters") or {}
+
+    if action == "again":
+        last = history.get("last_action")
+        if not last:
+            return None
+        resolved_action = last.get("action")
+        resolved_target = last.get("target")
+        old_parameters = last.get("parameters", {})
+    else:
+        resolved_action = None
+        resolved_target = None
+        old_parameters = {}
+        for entry in reversed(history.get("history", [])):
+            entry_action = entry.get("action")
+            if action.lower().strip() == entry_action.lower().strip():
+                resolved_action = action
+                resolved_target = entry.get("target")
+                old_parameters = entry.get("parameters", {})
+                break
+        if resolved_action is None:
+            return None
+
+    accepted = get_accepted_parameters(resolved_action, resolved_target)
+    for key in parameters:
+        if key == "history":
+            continue
+        if key not in accepted:
+            return None
+
+    new_parameters = {k: v for k, v in parameters.items() if k != "history"}
+
+    resolved = {
+        "action": resolved_action,
+        "target": resolved_target,
+        "parameters": {**old_parameters, **new_parameters}
+    }
+
+    if validate_command(resolved):
+        return resolved
+    
+    return None
+
+
+PARAM_TYPE_CHECKS = {
+    "level": lambda v: isinstance(v, (int, float)) and not isinstance(v, bool) and 0 <= v <= 100,
+}
+
+
 def validate_command(command):
     action = command.get("action")
     target = command.get("target")
     parameters = command.get("parameters") or {}
+    TARGET_ACTIONS = get_target_actions()
 
-    assigned_parameters = parameters.keys()
+    if action == "create_alias":
+        for entry in parameters:
+            if entry.lower().strip() not in get_all_files():
+                return False
+        return True
 
-    accepted_parameters = (openables.get(target, {}).get("accepted_parameters", {}))
+    elif action == "none":
+        if target is not None:
+            return False
+        return parameters == {}
 
-    for key in assigned_parameters:
-        if accepted_parameters.get(key) is not True:
+    elif action in NO_TARGET_ACTIONS:
+        if target is not None:
             return False
 
-    return True
+        accepted_parameters = NO_TARGET_ACTIONS[action]
+        for key, value in parameters.items():
+            if key not in accepted_parameters:
+                return False
+            check = PARAM_TYPE_CHECKS.get(key)
+            if check and not check(value):
+                return False
+        return True
+
+    elif action in TARGET_ACTIONS:
+        file_to_check = TARGET_ACTIONS[action]
+
+        if target not in file_to_check:
+            return False
+
+        accepted_parameters = file_to_check[target].get("accepted_parameters", {})
+        for key in parameters:
+            if accepted_parameters.get(key) is not True:
+                return False
+        return True
+
+    else:
+        return False
+
 
 # ---------- main loop ----------
 device_info = sd.query_devices(sd.default.device[0])
