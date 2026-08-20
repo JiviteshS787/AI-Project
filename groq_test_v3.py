@@ -8,13 +8,15 @@ from assistant.history import load_history
 from assistant.alias_manager import load_aliases
 
 from assistant.router import execute
-from assistant.confirmation import confirm_command
+from assistant.confirmation import confirm_command, format_command
 from assistant.brain.brain_groq_json import interpret
 
 
 from faster_whisper import WhisperModel
 
 from assistant.brain.brain_groq_json import apps, files, projects, scripts, aliases
+
+from assistant.state import state
 
 
 def get_all_files():
@@ -197,6 +199,10 @@ def parse_input(input):
                     valid_commands.append(command)
 
         if all_commands:
+            formatted_commands = []
+            for command in all_commands:
+                formatted_commands.append(format_command(command))
+            state["last_interpretation"] = formatted_commands
             if confirm_command(all_commands):
                 for cmd in all_commands:
                     execute(cmd)
@@ -336,6 +342,8 @@ while True:
         continue
 
     command = user_input.replace(WAKE_WORD, "").strip()
+
+    state["last_input"] = user_input
 
     if command:
         parse_input(command)

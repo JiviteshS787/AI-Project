@@ -4,6 +4,7 @@ import os
 from groq import Groq
 
 from assistant.monitor.usage_tracker import UsageTracker
+from assistant.state import update_usage_state
 
 
 # ============================================================
@@ -11,10 +12,6 @@ from assistant.monitor.usage_tracker import UsageTracker
 # ============================================================
 
 #Both of these models work well and deliver promising results.
-'''
-GPT-OSS-20b -> 44/45 -> invalid action = 'again'
-llama-3.1-8b-instant -> yet to test with new prompt
-'''
 
 #MODEL = "llama-3.1-8b-instant"
 MODEL = "openai/gpt-oss-20b"
@@ -318,6 +315,8 @@ def interpret(user_input):
             prompt_tokens=response.usage.prompt_tokens,
             completion_tokens=response.usage.completion_tokens,
         )
+
+        update_usage_state(MODEL)
 
         print(f"[tokens] prompt={response.usage.prompt_tokens} "
               f"completion={response.usage.completion_tokens} "

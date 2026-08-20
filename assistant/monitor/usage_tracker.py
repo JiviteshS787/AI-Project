@@ -42,8 +42,10 @@ class UsageTracker:
         self.path = path
         self._data = self._load()
 
+
     def reload(self):
         self._data = self._load()
+
 
     def _load(self) -> dict:
         if self.path.exists():
@@ -53,35 +55,37 @@ class UsageTracker:
                 pass
         return {}
 
+
     def _save(self):
         self.path.write_text(json.dumps(self._data, indent=2))
+
 
     def _model_bucket(self, model: str) -> dict:
         bucket = self._data.setdefault(model, {})
         if bucket.get("date") != _today():
-            # New day -> reset daily counters, keep limits/live header data.
             bucket["date"] = _today()
             bucket["tokens_today"] = 0
             bucket["requests_today"] = 0
+            bucket["live"] = {} 
+            bucket["live_captured_at"] = None
         bucket.setdefault("tokens_today", 0)
         bucket.setdefault("requests_today", 0)
         bucket.setdefault("recent_request_times", [])
-        bucket.setdefault("live", {})  # last-seen header values
+        bucket.setdefault("live", {})
+        bucket.setdefault("live_captured_at", None)
         return bucket
 
+
     def record(self, model: str, headers: dict | None, prompt_tokens: int, completion_tokens: int):
-        """Call this after every real Groq API call."""
         bucket = self._model_bucket(model)
         total_tokens = prompt_tokens + completion_tokens
 
-        # Local tracking (RPM window + TPD running total)
         now = time.time()
         bucket["recent_request_times"].append(now)
         bucket["recent_request_times"] = [t for t in bucket["recent_request_times"] if now - t < 60]
         bucket["requests_today"] += 1
         bucket["tokens_today"] += total_tokens
 
-        # Live header data (authoritative for RPD + TPM)
         if headers:
             live = bucket["live"]
             for key in (
@@ -90,31 +94,39 @@ class UsageTracker:
             ):
                 if key in headers:
                     live[key] = headers[key]
+            bucket["live_captured_at"] = now   # <-- CHANGED: stamp when this header snapshot was taken
 
         self._save()
 
+
     def snapshot(self, model: str) -> dict:
-        """Returns {rpm: (used, limit), rpd: (used, limit), tpm: (used, limit), tpd: (used, limit)}"""
         bucket = self._model_bucket(model)
         limits = DEFAULT_LIMITS.get(model, {"rpm": 30, "rpd": None, "tpm": None, "tpd": None})
         live = bucket.get("live", {})
-
+        captured_at = bucket.get("live_captured_at")
         now = time.time()
+
         rpm_used = len([t for t in bucket["recent_request_times"] if now - t < 60])
 
-        if "x-ratelimit-limit-requests" in live:
+        # RPD is a daily limit -> live data is only valid if it was captured "today"
+        # (the day-rollover reset in _model_bucket already clears it, but this guards
+        # against a bucket loaded mid-flight without going through that path)
+        rpd_live_valid = captured_at is not None and datetime.fromtimestamp(captured_at).strftime("%Y-%m-%d") == _today()
+        if rpd_live_valid and "x-ratelimit-limit-requests" in live:
             rpd_limit = int(live["x-ratelimit-limit-requests"])
             rpd_used = rpd_limit - int(live.get("x-ratelimit-remaining-requests", rpd_limit))
         else:
             rpd_limit = limits.get("rpd")
             rpd_used = bucket["requests_today"]
 
-        if "x-ratelimit-limit-tokens" in live:
+        # TPM is a per-minute limit -> live data older than 60s is meaningless
+        tpm_live_valid = captured_at is not None and (now - captured_at) < 60
+        if tpm_live_valid and "x-ratelimit-limit-tokens" in live:
             tpm_limit = int(live["x-ratelimit-limit-tokens"])
             tpm_used = tpm_limit - int(live.get("x-ratelimit-remaining-tokens", tpm_limit))
         else:
             tpm_limit = limits.get("tpm")
-            tpm_used = None  # no reliable per-minute local estimate without header data
+            tpm_used = None  # stale or missing -> no reliable estimate
 
         tpd_limit = limits.get("tpd")
         tpd_used = bucket["tokens_today"]
@@ -125,6 +137,7 @@ class UsageTracker:
             "tpm": (tpm_used, tpm_limit),
             "tpd": (tpd_used, tpd_limit),
         }
+
 
     def tracked_models(self) -> list[str]:
         return list(self._data.keys())

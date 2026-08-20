@@ -1,6 +1,6 @@
 import json
 
-from assistant.history import find_action_type, load_history
+from assistant.history import find_action_type, load_history, get_last_action
 
 from assistant.command_actions import find_action
 from assistant.command_matcher import find_match
@@ -113,7 +113,7 @@ def decipher(user_input):
     project = None
 
     #Get most recent executes action, if any for it or again commands
-    last = history.get("last_action")
+    last = get_last_action()
 
 
     #If only again, repeat most recent action
