@@ -1,10 +1,13 @@
 import json
 import os
+import copy
 
 from groq import Groq
 
 from assistant.monitor.usage_tracker import UsageTracker
-from assistant.state import update_usage_state
+from assistant.state import update_usage_state, state
+
+from dashboard_api.push_updates import push_state_update
 
 
 # ============================================================
@@ -316,7 +319,9 @@ def interpret(user_input):
             completion_tokens=response.usage.completion_tokens,
         )
 
-        update_usage_state(MODEL)
+        update_usage_state(MODEL, tracker)
+        push_state_update("stats", {"model": MODEL, "stats": copy.deepcopy(state["stats"][MODEL])})
+
 
         print(f"[tokens] prompt={response.usage.prompt_tokens} "
               f"completion={response.usage.completion_tokens} "

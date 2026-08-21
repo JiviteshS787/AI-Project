@@ -45,6 +45,7 @@ class UsageTracker:
 
     def reload(self):
         self._data = self._load()
+        self.reset_if_needed()
 
 
     def _load(self) -> dict:
@@ -58,6 +59,44 @@ class UsageTracker:
 
     def _save(self):
         self.path.write_text(json.dumps(self._data, indent=2))
+
+
+    def reset_if_needed(self) -> bool:
+        today = _today()
+        now = time.time()
+        modified = False
+
+        for model, bucket in self._data.items():
+            # 1. Daily Reset (if date has rolled over)
+            if bucket.get("date") != today:
+                bucket["date"] = today
+                bucket["tokens_today"] = 0
+                bucket["requests_today"] = 0
+                bucket["recent_request_times"] = []
+                bucket["live"] = {}
+                bucket["live_captured_at"] = None
+                modified = True
+                continue
+
+            # 2. RPM Rolling Window Cleanup (remove timestamps > 60s old)
+            recent = bucket.get("recent_request_times", [])
+            fresh_recent = [t for t in recent if now - t < 60]
+            if len(fresh_recent) != len(recent):
+                bucket["recent_request_times"] = fresh_recent
+                modified = True
+
+            # 3. Live Header Expiry (clear headers if captured > 60s ago)
+            captured_at = bucket.get("live_captured_at")
+            if captured_at is not None and (now - captured_at) >= 60:
+                if bucket.get("live"):
+                    bucket["live"] = {}
+                    modified = True
+
+        # Save to disk only if state actually changed
+        if modified:
+            self._save()
+
+        return modified
 
 
     def _model_bucket(self, model: str) -> dict:
@@ -114,10 +153,11 @@ class UsageTracker:
         rpd_live_valid = captured_at is not None and datetime.fromtimestamp(captured_at).strftime("%Y-%m-%d") == _today()
         if rpd_live_valid and "x-ratelimit-limit-requests" in live:
             rpd_limit = int(live["x-ratelimit-limit-requests"])
-            rpd_used = rpd_limit - int(live.get("x-ratelimit-remaining-requests", rpd_limit))
+            #rpd_used = rpd_limit - int(live.get("x-ratelimit-remaining-requests", rpd_limit))
         else:
             rpd_limit = limits.get("rpd")
-            rpd_used = bucket["requests_today"]
+            #rpd_used = bucket["requests_today"]
+        rpd_used = bucket["requests_today"]
 
         # TPM is a per-minute limit -> live data older than 60s is meaningless
         tpm_live_valid = captured_at is not None and (now - captured_at) < 60
@@ -126,7 +166,7 @@ class UsageTracker:
             tpm_used = tpm_limit - int(live.get("x-ratelimit-remaining-tokens", tpm_limit))
         else:
             tpm_limit = limits.get("tpm")
-            tpm_used = None  # stale or missing -> no reliable estimate
+            tpm_used = 0  # stale or missing -> no reliable estimate
 
         tpd_limit = limits.get("tpd")
         tpd_used = bucket["tokens_today"]

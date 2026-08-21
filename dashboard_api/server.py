@@ -1,12 +1,32 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
+
 import json
 
 from pydantic import BaseModel
 from typing import Optional
 
+from assistant.state import state
 
+from assistant.monitor.usage_tracker import UsageTracker, DEFAULT_LIMITS
+
+from assistant.brain.brain_groq_json import MODEL
+
+
+########## Handle Lifespan ##########
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Runs on server startup
+    state["stats"] = get_formatted_stats()
+    print("✅ Initialized LLM Rate Limit stats from .groq_usage.json")
+    yield
+    # Code after yield runs on server shutdown (if needed)
+
+
+########## Initialize App ##########
 app = FastAPI()
 
 #React connection enabler
@@ -21,6 +41,7 @@ app.add_middleware(
 logs = []
 clients = []
 
+
 ########## Classes ##########
 class Event(BaseModel):
     type: str
@@ -34,12 +55,47 @@ class Event(BaseModel):
 ########## Methods ##########
 
 def classify(event: Event):
-    if "error" in event.message.lower():
+    if event.message and "error" in event.message.lower():
         event.severity = "error"
     elif "login" in event.type:
         event.severity = "info"
     return event
 
+
+async def push_state():
+    await broadcast({"type": "state", **state})
+
+
+async def broadcast(payload: dict):
+    for ws in clients[:]:
+        try:
+            await ws.send_text(json.dumps(payload))
+        except Exception:
+            clients.remove(ws)
+
+
+tracker = UsageTracker()
+def get_formatted_stats() -> dict:
+    tracker.reload()
+    tracker.reset_if_needed()
+    
+    stats = {}
+
+    # Check if the active MODEL is tracked or in fallback defaults
+    if MODEL in tracker.tracked_models() or MODEL in DEFAULT_LIMITS:
+        snap = tracker.snapshot(MODEL)
+        stats[MODEL] = {
+            "rpm_used": snap["rpm"][0],
+            "rpm_limit": snap["rpm"][1],
+            "rpd_used": snap["rpd"][0],
+            "rpd_limit": snap["rpd"][1],
+            "tpm_used": snap["tpm"][0],
+            "tpm_limit": snap["tpm"][1],
+            "tpd_used": snap["tpd"][0],
+            "tpd_limit": snap["tpd"][1],
+        }
+
+    return stats
 
 
 ########## Endpoints ##########
@@ -49,21 +105,38 @@ def home():
     return {"status": "dashboard running"}
 
 
+@app.get("/stats")
+def get_stats():
+    return state["stats"]
+
+
+@app.on_event("startup")
+async def startup_event():
+    state["stats"] = get_formatted_stats()
+    print("✅ Initialized LLM Rate Limit stats from .groq_usage.json")
+
+
 # REST endpoint
 @app.post("/event")
 async def receive_event(event: Event):
-    event["time"] = datetime.now().isoformat()
-
     event = classify(event)
-    
-    logs.append(event)
 
-    # push to all connected React clients
-    for ws in clients[:]:
-        try:
-            await ws.send_text(json.dumps(event))
-        except Exception:
-            clients.remove(ws)
+    # merge incoming data into server's state
+    if event.type == "last_input":
+        state["last_input"] = event.data.get("last_input")
+    elif event.type == "last_interpretation":
+        state["last_interpretation"] = event.data.get("last_interpretation")
+    elif event.type == "stats":
+        model = event.data.get("model")
+        stats = event.data.get("stats")
+        if model and stats is not None:
+            state["stats"][model] = stats
+
+    payload = event.model_dump()
+    payload["time"] = datetime.now().isoformat()
+    logs.append(payload)
+
+    await push_state()  # broadcast the updated, merged state
     return {"status": "ok"}
 
 
@@ -74,6 +147,7 @@ async def websocket_endpoint(websocket: WebSocket):
     clients.append(websocket)
 
     try:
+        await websocket.send_text(json.dumps({"type": "state", **state}))
         while True:
             await websocket.receive_text()  # keep alive
     except WebSocketDisconnect:

@@ -1,8 +1,4 @@
-from assistant.monitor.usage_tracker import UsageTracker
-
-tracker = UsageTracker()
-
-def update_usage_state(model: str):
+def update_usage_state(model: str, tracker):
     snap = tracker.snapshot(model)
     state["stats"][model] = {
         "tpm_used": snap["tpm"][0], "tpm_limit": snap["tpm"][1],
@@ -14,10 +10,5 @@ def update_usage_state(model: str):
 state = {
     "last_input": None,
     "last_interpretation": None,
-    "stats": {
-        "tpm": 0,
-        "tpd": 0,
-        "rpm": 0,
-        "rpd": 0
-    }
+    "stats": {}
 }

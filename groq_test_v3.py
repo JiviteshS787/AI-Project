@@ -4,6 +4,11 @@ import sounddevice as sd
 import json
 import webrtcvad
 
+import time
+
+#React
+
+
 from assistant.history import load_history
 from assistant.alias_manager import load_aliases
 
@@ -11,14 +16,16 @@ from assistant.router import execute
 from assistant.confirmation import confirm_command, format_command
 from assistant.brain.brain_groq_json import interpret
 
+from assistant.state import state
+from dashboard_api.push_updates import push_state_update
 
 from faster_whisper import WhisperModel
 
 from assistant.brain.brain_groq_json import apps, files, projects, scripts, aliases
 
-from assistant.state import state
 
 
+#--------------- JSON loading ---------------
 def get_all_files():
     aliases = load_aliases()
     return {**apps, **files, **projects, **scripts, **aliases}
@@ -75,7 +82,6 @@ NO_TARGET_ACTIONS = {
     "list_monitors": []
 }
 
-#handle -> again, create_alias, none
 
 # ---------- config ----------
 SAMPLE_RATE = 16000
@@ -83,6 +89,7 @@ FRAME_DURATION_MS = 30
 FRAME_SIZE = int(SAMPLE_RATE * FRAME_DURATION_MS / 1000)
 SILENCE_LIMIT_FRAMES = 20
 VAD_AGGRESSIVENESS = 2
+
 WAKE_WORD = "assistant"
 
 model = WhisperModel("base", device="cpu", compute_type="int8")
@@ -153,6 +160,26 @@ def listen_for_speech():
 
 
 # ---------- command parsing ----------
+def website_check(commands):
+    for command in commands:
+        parameters = command.get("parameters") or {}
+        websites = parameters.get("websites")
+
+        # Ensure 'websites' exists and is a non-empty list
+        if isinstance(websites, list):
+            updated_websites = []
+            for site in websites:
+                site = str(site).strip()
+                # Append .com if it doesn't already have a domain extension
+                if site and not site.endswith(".com"):
+                    site = f"{site}.com"
+                updated_websites.append(site)
+            
+            # Save the updated list back into the parameters dict
+            parameters["websites"] = updated_websites
+    return commands
+
+
 def parse_input(input):
     user_input = input.lower().strip()
     if user_input == 'help':
@@ -194,17 +221,22 @@ def parse_input(input):
                     resolved = history_check(command)
                     if resolved:
                         valid_commands.append(resolved)
-
                 elif validate_command(command):
                     valid_commands.append(command)
 
-        if all_commands:
+        if valid_commands:
+            updated_commands = website_check(valid_commands)
+
             formatted_commands = []
-            for command in all_commands:
+            for command in updated_commands:
                 formatted_commands.append(format_command(command))
+
             state["last_interpretation"] = formatted_commands
-            if confirm_command(all_commands):
-                for cmd in all_commands:
+            print(state)
+            push_state_update("last_interpretation", {"last_interpretation": formatted_commands})
+
+            if confirm_command(updated_commands):
+                for cmd in updated_commands:
                     execute(cmd)
     return
 
@@ -344,6 +376,17 @@ while True:
     command = user_input.replace(WAKE_WORD, "").strip()
 
     state["last_input"] = user_input
+    push_state_update("last_input", {"last_input": user_input})
 
     if command:
+        if command.lower().strip().replace(".", "") == "end":
+            state["last_interpretation"] = ["Session Ended"]
+            
+            push_state_update("last_interpretation", {"last_interpretation": ["Session Ended"]})
+            
+            time.sleep(2)
+
+            print("Shutting down assistant...")
+            break
+
         parse_input(command)
