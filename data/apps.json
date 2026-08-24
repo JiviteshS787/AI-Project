@@ -5,7 +5,8 @@
         "process": "chrome.exe",
         "accepted_parameters": {
             "websites": true,
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
     "calculator": {
@@ -13,7 +14,8 @@
         "path": "calc.exe",
         "process": "CalculatorApp.exe",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
     "visual studio": {
@@ -21,7 +23,8 @@
         "path": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe",
         "process": "Code.exe",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
     "notion":{
@@ -29,7 +32,8 @@
         "path": "C:\\Users\\jivit\\AppData\\Local\\Programs\\Notion\\Notion.exe",
         "process": "Notion.exe",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
     "outlook": {
@@ -37,7 +41,8 @@
         "path": "C:\\Program Files\\WindowsApps\\Microsoft.OutlookForWindows_1.2026.421.500_x64__8wekyb3d8bbwe\\olk.exe",
         "process": "olk.exe",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
     "onenote": {
@@ -45,7 +50,8 @@
         "path": "C:\\Program Files\\Microsoft Office\\root\\Office16\\ONENOTE.EXE",
         "process": "ONENOTE.EXE",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
     "notepad": {
@@ -53,7 +59,8 @@
         "path":"C:\\Program Files\\WindowsApps\\Microsoft.WindowsNotepad_11.2605.34.0_x64__8wekyb3d8bbwe\\Notepad\\Notepad.exe",
         "process": "Notepad.exe",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
     "file-explorer": {
@@ -61,7 +68,8 @@
         "path": "C:\\Windows\\explorer.exe",
         "process": "explorer.exe",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
     "settings": {
@@ -69,7 +77,8 @@
         "path": "C:\\Windows\\ImmersiveControlPanel\\SystemSettings.exe",
         "process": "SystemSettings.exe",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     }
 }

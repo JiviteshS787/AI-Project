@@ -269,7 +269,7 @@ def history_check(command):
         resolved_action = None
         resolved_target = None
         old_parameters = {}
-        for entry in reversed(history.get("history", [])):
+        for entry in reversed(history):
             entry_action = entry.get("action")
             if action.lower().strip() == entry_action.lower().strip():
                 resolved_action = action
@@ -355,6 +355,39 @@ def validate_command(command):
 device_info = sd.query_devices(sd.default.device[0])
 print("Using mic:", device_info["name"])
 
+#Typing test
+while True:
+    user_input = input("You: ").strip().lower()
+
+    if not user_input:
+        continue
+
+    print("You said:", user_input)
+
+    if WAKE_WORD not in user_input:
+        print("⏭ Ignored (no wake word)")
+        continue
+
+    command = user_input.replace(WAKE_WORD, "").strip()
+
+    state["last_input"] = user_input
+    push_state_update("last_input", {"last_input": user_input})
+
+    if command:
+        if command.lower().strip().replace(".", "") == "end":
+            state["last_interpretation"] = ["Session Ended"]
+
+            time.sleep(2)
+
+            push_state_update("last_interpretation", {"last_interpretation": ["Session Ended"]})
+
+
+            print("Shutting down assistant...")
+            break
+
+        parse_input(command)
+
+'''
 while True:
     audio = listen_for_speech()
 
@@ -390,3 +423,4 @@ while True:
             break
 
         parse_input(command)
+'''

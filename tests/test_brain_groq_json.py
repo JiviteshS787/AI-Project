@@ -109,7 +109,8 @@ TESTS = [
 '''
 
 TESTS = [
-    ("Open again", "Focus chrome on monitor 2")
+    ("Open again", "Focus chrome on monitor 2"),
+    ("Moving windows", "Snap chrome to the left")
 ]
 
 

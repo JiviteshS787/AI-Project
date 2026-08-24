@@ -3,7 +3,8 @@
         "type": "file",
         "path": "C:\\Users\\jivit\\Downloads",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
 
@@ -11,7 +12,8 @@
         "type": "file",
         "path":"C:\\Users\\jivit\\AI_Project\\AI-Project",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
 
@@ -19,7 +21,8 @@
         "type": "file",
         "path": "C:\\Users\\jivit\\Hand-Tracking\\HandTracking",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     },
 
@@ -27,7 +30,8 @@
         "type": "file",
         "path": "C:\\Users\\jivit\\OneDrive\\Documents",
         "accepted_parameters": {
-            "monitor": true
+            "monitor": true,
+            "direction": true
         }
     }
 }

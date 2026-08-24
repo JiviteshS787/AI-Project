@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 
 import json
+import asyncio
 
 from pydantic import BaseModel
 from typing import Optional
@@ -21,13 +22,21 @@ from assistant.brain.brain_groq_json import MODEL
 async def lifespan(app: FastAPI):
     # Runs on server startup
     state["stats"] = get_formatted_stats()
-    print("✅ Initialized LLM Rate Limit stats from .groq_usage.json")
+
+    task = asyncio.create_task(periodic_stats_refresh())
+
     yield
+
     # Code after yield runs on server shutdown (if needed)
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
 ########## Initialize App ##########
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 #React connection enabler
 app.add_middleware(
@@ -53,6 +62,16 @@ class Event(BaseModel):
 
 
 ########## Methods ##########
+
+BACKGROUND_CHECK_INTERVAL = 5 #seconds
+
+async def periodic_stats_refresh():
+    while True:
+        await asyncio.sleep(BACKGROUND_CHECK_INTERVAL)
+        tracker.reload()  # re-read .groq_usage.json from disk, then prune stale entries
+        state["stats"] = get_formatted_stats()
+        await push_state()
+
 
 def classify(event: Event):
     if event.message and "error" in event.message.lower():
@@ -113,7 +132,6 @@ def get_stats():
 @app.on_event("startup")
 async def startup_event():
     state["stats"] = get_formatted_stats()
-    print("✅ Initialized LLM Rate Limit stats from .groq_usage.json")
 
 
 # REST endpoint
