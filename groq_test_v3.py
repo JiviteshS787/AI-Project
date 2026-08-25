@@ -6,6 +6,8 @@ import webrtcvad
 
 import time
 
+from datetime import datetime
+
 #React
 
 
@@ -82,6 +84,13 @@ NO_TARGET_ACTIONS = {
     "list_monitors": []
 }
 
+HISTORY_EDGE_CASES = [
+    "maximize_window",
+    "minimize_window",
+    "focus_window",
+    "snap_window",
+    "move_window_to_monitor"
+]
 
 # ---------- config ----------
 SAMPLE_RATE = 16000
@@ -180,6 +189,23 @@ def website_check(commands):
     return commands
 
 
+def convert_to_format(command):
+    event = command.copy()
+    
+    # ensure structure consistency
+    event["action"] = event.get("action")
+    event["target"] = event.get("target")
+    event["parameters"] = event.get("parameters") or {}
+    
+    # ALWAYS enforce timestamp
+    event["time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    
+    # cleanup empty fields
+    if "websites" in event["parameters"] and not event["parameters"]["websites"]:
+        del event["parameters"]["websites"]
+    return event
+
+
 def parse_input(input):
     user_input = input.lower().strip()
     if user_input == 'help':
@@ -209,6 +235,8 @@ def parse_input(input):
         all_commands = None
         valid_commands = []
         interpreted_commands = interpret(user_input)
+        temp_history = load_history().copy()
+
         if isinstance(interpreted_commands, dict) and "error" in interpreted_commands:
             print(f"Error: {interpreted_commands['error']}")
             if "details" in interpreted_commands:
@@ -217,8 +245,13 @@ def parse_input(input):
             all_commands = interpreted_commands
             for command in all_commands:
                 parameters = command.get("parameters") or {}
+
+                if not parameters.get("history", False):
+                    event = convert_to_format(command)
+                    temp_history.append(event)
+
                 if parameters.get("history") is True:
-                    resolved = history_check(command)
+                    resolved = history_check(command, temp_history)
                     if resolved:
                         valid_commands.append(resolved)
                 elif validate_command(command):
@@ -238,6 +271,8 @@ def parse_input(input):
             if confirm_command(updated_commands):
                 for cmd in updated_commands:
                     execute(cmd)
+                    time.sleep(1)
+
     return
 
 
@@ -252,14 +287,14 @@ def get_accepted_parameters(action, target):
     return []
 
 
-def history_check(command):
-    history = load_history()
+def history_check(command, temp_history):
+    history = temp_history
 
     action = command.get("action")
     parameters = command.get("parameters") or {}
 
     if action == "again":
-        last = history.get("last_action")
+        last = history[-1]
         if not last:
             return None
         resolved_action = last.get("action")
@@ -269,13 +304,21 @@ def history_check(command):
         resolved_action = None
         resolved_target = None
         old_parameters = {}
-        for entry in reversed(history):
-            entry_action = entry.get("action")
-            if action.lower().strip() == entry_action.lower().strip():
-                resolved_action = action
-                resolved_target = entry.get("target")
-                old_parameters = entry.get("parameters", {})
-                break
+
+        if action in HISTORY_EDGE_CASES:
+            for entry in reversed(history):
+                if entry.get("target"):
+                    resolved_action = action
+                    resolved_target = entry.get("target")
+                    break
+        else:
+            for entry in reversed(history):
+                entry_action = entry.get("action")
+                if action.lower().strip() == entry_action.lower().strip():
+                    resolved_action = action
+                    resolved_target = entry.get("target")
+                    old_parameters = entry.get("parameters", {})
+                    break
         if resolved_action is None:
             return None
 
@@ -370,17 +413,16 @@ while True:
 
     command = user_input.replace(WAKE_WORD, "").strip()
 
-    state["last_input"] = user_input
-    push_state_update("last_input", {"last_input": user_input})
+    state["last_input"] = command
+    push_state_update("last_input", {"last_input": command})
 
     if command:
         if command.lower().strip().replace(".", "") == "end":
             state["last_interpretation"] = ["Session Ended"]
 
-            time.sleep(2)
-
             push_state_update("last_interpretation", {"last_interpretation": ["Session Ended"]})
 
+            time.sleep(2)
 
             print("Shutting down assistant...")
             break
@@ -408,8 +450,8 @@ while True:
 
     command = user_input.replace(WAKE_WORD, "").strip()
 
-    state["last_input"] = user_input
-    push_state_update("last_input", {"last_input": user_input})
+    state["last_input"] = command
+    push_state_update("last_input", {"last_input": command})
 
     if command:
         if command.lower().strip().replace(".", "") == "end":

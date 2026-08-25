@@ -10,5 +10,7 @@ def update_usage_state(model: str, tracker):
 state = {
     "last_input": None,
     "last_interpretation": None,
-    "stats": {}
+    "stats": {},
+    "aliases": None,
+    "history": []
 }

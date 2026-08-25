@@ -14,14 +14,13 @@ separate test runs / script restarts within the same day.
 """
 
 import json
+import re
 import time
 from datetime import datetime
 from pathlib import Path
 
 USAGE_FILE = Path(__file__).parent / ".groq_usage.json"
 
-# Fallback known limits per model (from Groq's free-tier dashboard).
-# RPD/TPM will be overridden live from response headers when available.
 DEFAULT_LIMITS = {
     "llama-3.1-8b-instant":        {"rpm": 30, "rpd": 14400, "tpm": 6000,  "tpd": 500000},
     "llama-3.3-70b-versatile":     {"rpm": 30, "rpd": 1000,  "tpm": 12000, "tpd": 100000},
@@ -35,6 +34,30 @@ DEFAULT_LIMITS = {
 
 def _today() -> str:
     return datetime.now().strftime("%Y-%m-%d")
+
+
+def _parse_reset_duration(value: str) -> float:
+    """
+    Parse Groq's reset-duration strings into seconds.
+    Formats seen: "7.66s", "2m59.56s", "1h2m3.4s"
+    """
+    if not value:
+        return 0.0
+
+    pattern = r"(?:(\d+)h)?(?:(\d+)m)?(?:([\d.]+)s)?"
+    match = re.match(pattern, value.strip())
+    if not match:
+        return 0.0
+
+    hours, minutes, seconds = match.groups()
+    total = 0.0
+    if hours:
+        total += int(hours) * 3600
+    if minutes:
+        total += int(minutes) * 60
+    if seconds:
+        total += float(seconds)
+    return total
 
 
 class UsageTracker:
@@ -75,6 +98,7 @@ class UsageTracker:
                 bucket["recent_request_times"] = []
                 bucket["live"] = {}
                 bucket["live_captured_at"] = None
+                bucket["tpm_reset_at"] = None
                 modified = True
                 continue
 
@@ -85,14 +109,23 @@ class UsageTracker:
                 bucket["recent_request_times"] = fresh_recent
                 modified = True
 
-            # 3. Live Header Expiry (clear headers if captured > 60s ago)
+            # 3. Live Header Expiry — use Groq's own reset-tokens countdown
+            #    instead of a flat 60s guess, when we have it.
+            tpm_reset_at = bucket.get("tpm_reset_at")
             captured_at = bucket.get("live_captured_at")
-            if captured_at is not None and (now - captured_at) >= 60:
+
+            if tpm_reset_at is not None:
+                if now >= tpm_reset_at:
+                    if bucket.get("live"):
+                        bucket["live"] = {}
+                        bucket["tpm_reset_at"] = None
+                        modified = True
+            elif captured_at is not None and (now - captured_at) >= 60:
+                # Fallback for old data captured before this fix, with no reset_at stored
                 if bucket.get("live"):
                     bucket["live"] = {}
                     modified = True
 
-        # Save to disk only if state actually changed
         if modified:
             self._save()
 
@@ -105,13 +138,15 @@ class UsageTracker:
             bucket["date"] = _today()
             bucket["tokens_today"] = 0
             bucket["requests_today"] = 0
-            bucket["live"] = {} 
+            bucket["live"] = {}
             bucket["live_captured_at"] = None
+            bucket["tpm_reset_at"] = None
         bucket.setdefault("tokens_today", 0)
         bucket.setdefault("requests_today", 0)
         bucket.setdefault("recent_request_times", [])
         bucket.setdefault("live", {})
         bucket.setdefault("live_captured_at", None)
+        bucket.setdefault("tpm_reset_at", None)
         return bucket
 
 
@@ -130,10 +165,19 @@ class UsageTracker:
             for key in (
                 "x-ratelimit-limit-requests", "x-ratelimit-remaining-requests",
                 "x-ratelimit-limit-tokens", "x-ratelimit-remaining-tokens",
+                "x-ratelimit-reset-tokens", "x-ratelimit-reset-requests",
             ):
                 if key in headers:
                     live[key] = headers[key]
-            bucket["live_captured_at"] = now   # <-- CHANGED: stamp when this header snapshot was taken
+            bucket["live_captured_at"] = now
+
+            # Compute the absolute time TPM data actually expires, using
+            # Groq's own reset-tokens countdown instead of guessing 60s.
+            reset_tokens_str = headers.get("x-ratelimit-reset-tokens")
+            if reset_tokens_str:
+                bucket["tpm_reset_at"] = now + _parse_reset_duration(reset_tokens_str)
+            else:
+                bucket["tpm_reset_at"] = None
 
         self._save()
 
@@ -143,30 +187,30 @@ class UsageTracker:
         limits = DEFAULT_LIMITS.get(model, {"rpm": 30, "rpd": None, "tpm": None, "tpd": None})
         live = bucket.get("live", {})
         captured_at = bucket.get("live_captured_at")
+        tpm_reset_at = bucket.get("tpm_reset_at")
         now = time.time()
 
         rpm_used = len([t for t in bucket["recent_request_times"] if now - t < 60])
 
-        # RPD is a daily limit -> live data is only valid if it was captured "today"
-        # (the day-rollover reset in _model_bucket already clears it, but this guards
-        # against a bucket loaded mid-flight without going through that path)
         rpd_live_valid = captured_at is not None and datetime.fromtimestamp(captured_at).strftime("%Y-%m-%d") == _today()
         if rpd_live_valid and "x-ratelimit-limit-requests" in live:
             rpd_limit = int(live["x-ratelimit-limit-requests"])
-            #rpd_used = rpd_limit - int(live.get("x-ratelimit-remaining-requests", rpd_limit))
         else:
             rpd_limit = limits.get("rpd")
-            #rpd_used = bucket["requests_today"]
         rpd_used = bucket["requests_today"]
 
-        # TPM is a per-minute limit -> live data older than 60s is meaningless
-        tpm_live_valid = captured_at is not None and (now - captured_at) < 60
+        # TPM live data is valid until Groq's own reset countdown expires
+        if tpm_reset_at is not None:
+            tpm_live_valid = now < tpm_reset_at
+        else:
+            tpm_live_valid = captured_at is not None and (now - captured_at) < 60
+
         if tpm_live_valid and "x-ratelimit-limit-tokens" in live:
             tpm_limit = int(live["x-ratelimit-limit-tokens"])
             tpm_used = tpm_limit - int(live.get("x-ratelimit-remaining-tokens", tpm_limit))
         else:
             tpm_limit = limits.get("tpm")
-            tpm_used = 0  # stale or missing -> no reliable estimate
+            tpm_used = 0
 
         tpd_limit = limits.get("tpd")
         tpd_used = bucket["tokens_today"]

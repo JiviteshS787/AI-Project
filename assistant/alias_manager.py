@@ -3,6 +3,8 @@ import json
 from assistant.tools import projects, scripts, apps, files
 from assistant.command_parser import synonyms, file_synonyms
 
+from dashboard_api.push_updates import push_state_update
+
 alias_file = "data/aliases.json"
 
 
@@ -124,9 +126,12 @@ def list_aliases():
 
     if not aliases:
         print("No aliases created")
+        push_state_update("aliases", {"aliases": {}})
         return
 
     print("\n=== Aliases ===")
 
     for alias, target in aliases.items():
         print(f"{alias} -> {target}")
+
+    push_state_update("aliases", {"aliases": aliases})

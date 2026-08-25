@@ -5,12 +5,27 @@ function App() {
   const [dashboardState, setDashboardState] = useState({
     last_input: "",
     last_interpretation: null,
-    stats: {}
+    stats: {},
+    aliases: null,
+    history: null
   });
   const [messages, setMessages] = useState([]);
 
   const prevInputRef = useRef("");
   const prevInterpretationRef = useRef(null);
+
+  const [aliasesVisible, setAliasesVisible] = useState(false);
+  const aliasesTimerRef = useRef(null);
+  const prevAliasesRef = useRef(null);
+
+  const chatContainerRef = useRef(null);
+  const historyPanelRef = useRef(null);
+  const chatAutoScrollRef = useRef(true);
+  const historyAutoScrollRef = useRef(true);
+
+  const isNearBottom = (el, threshold = 80) => {
+      return el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+  };
 
   useEffect(() => {
     fetch("http://localhost:8000/stats")
@@ -36,6 +51,14 @@ function App() {
           ]);
         }
 
+        if (data.aliases !== null && data.aliases !== undefined &&
+            JSON.stringify(data.aliases) !== JSON.stringify(prevAliasesRef.current)) {
+              prevAliasesRef.current = data.aliases;
+              setAliasesVisible(true);
+              clearTimeout(aliasesTimerRef.current);
+              aliasesTimerRef.current = setTimeout(() => setAliasesVisible(false), 7000);
+            }
+
         if (
           Array.isArray(data.last_interpretation) &&
           data.last_interpretation !== prevInterpretationRef.current &&
@@ -58,8 +81,40 @@ function App() {
     ws.onopen = () => console.log("Connected to WebSocket");
     ws.onclose = () => console.log("Disconnected");
 
-    return () => ws.close();
+    const chatEl = chatContainerRef.current;
+    const historyEl = historyPanelRef.current;
+
+    const handleChatScroll = () => {
+      if (chatEl) chatAutoScrollRef.current = isNearBottom(chatEl);
+    };
+    const handleHistoryScroll = () => {
+      if (historyEl) historyAutoScrollRef.current = isNearBottom(historyEl);
+    };
+
+    chatEl?.addEventListener("scroll", handleChatScroll);
+    historyEl?.addEventListener("scroll", handleHistoryScroll);
+
+    return () => {
+      ws.close();
+      chatEl?.removeEventListener("scroll", handleChatScroll);
+      historyEl?.removeEventListener("scroll", handleHistoryScroll);
+    };
+    
   }, []);
+
+
+  useEffect(() => {
+    if (chatAutoScrollRef.current && chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (historyAutoScrollRef.current && historyPanelRef.current) {
+      historyPanelRef.current.scrollTop = historyPanelRef.current.scrollHeight;
+    }
+  }, [dashboardState.history]);
+
 
   // Metrics to render per model, in display order
   const METRICS = [
@@ -72,7 +127,7 @@ function App() {
   return (
     <div className="app">
       <h1 className="title">AI Dashboard</h1>
-      <div className="chat-container">
+      <div className="chat-container" ref={chatContainerRef}>
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -82,7 +137,6 @@ function App() {
           </div>
         ))}
       </div>
-
       <div className="stats">
         {Object.entries(dashboardState.stats).map(([model, modelStats]) => (
           <div key={model} className="stats-card">
@@ -114,6 +168,63 @@ function App() {
           </div>
         ))}
       </div>
+      {dashboardState.aliases !== null && aliasesVisible && (
+        <div className="aliases-panel">
+          <h3 className="panel-title">Aliases</h3>
+          {Object.keys(dashboardState.aliases).length === 0 ? (
+            <p className="empty-note">No aliases created</p>
+          ) : (
+            <ul className="alias-list">
+              {Object.entries(dashboardState.aliases).map(([alias, commands]) => (
+                <li key={alias} className="alias-item">
+                  <span className="alias-name">
+                    {alias.charAt(0).toUpperCase() + alias.slice(1)}
+                  </span>
+                  <span className="alias-arrow">→</span>
+                  <span className="alias-targets">
+                    {commands
+                      .map((cmd) =>
+                        cmd.target.charAt(0).toUpperCase() + cmd.target.slice(1)
+                      )
+                      .join(", ")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {dashboardState.history !== null && (
+        <div className="history-container">
+          <h3 className="panel-title">Today's History</h3>
+          <div className="history-panel" ref={historyPanelRef}>
+            {(() => {
+              const today = new Date().toISOString().slice(0, 10);
+              const todaysCommands = dashboardState.history.filter(
+                (cmd) => cmd.time?.slice(0, 10) === today
+              );
+              return todaysCommands.length === 0 ? (
+                <p className="empty-note">No history found</p>
+              ) : (
+                todaysCommands.map((cmd, i) => (
+                  <div key={i} className="history-entry">
+                    <span className="history-time">{cmd.time?.slice(11, 16)}</span>
+                    <span className="history-action">{cmd.action}</span>
+                    <span className="history-target">{cmd.target}</span>
+                    {cmd.parameters && Object.keys(cmd.parameters).length > 0 && (
+                      <div className="history-params">
+                        {Object.entries(cmd.parameters).map(([k, v]) => (
+                          <span key={k} className="history-param">{k}: {String(v)}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

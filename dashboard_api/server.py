@@ -16,12 +16,16 @@ from assistant.monitor.usage_tracker import UsageTracker, DEFAULT_LIMITS
 
 from assistant.brain.brain_groq_json import MODEL
 
+from assistant.history import load_history
+
 
 ########## Handle Lifespan ##########
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Runs on server startup
     state["stats"] = get_formatted_stats()
+
+    state["history"] = get_history()
 
     task = asyncio.create_task(periodic_stats_refresh())
 
@@ -117,6 +121,9 @@ def get_formatted_stats() -> dict:
     return stats
 
 
+def get_history():
+    return load_history()
+
 ########## Endpoints ##########
 
 @app.get("/")
@@ -149,6 +156,10 @@ async def receive_event(event: Event):
         stats = event.data.get("stats")
         if model and stats is not None:
             state["stats"][model] = stats
+    elif event.type == "aliases":
+        state["aliases"] = event.data.get("aliases", {})
+    elif event.type == "history":
+        state["history"] = event.data.get("history", [])
 
     payload = event.model_dump()
     payload["time"] = datetime.now().isoformat()

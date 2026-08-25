@@ -1,6 +1,8 @@
 import json
 from datetime import datetime
 
+from dashboard_api.push_updates import push_state_update
+
 log_file = "data/history.log"
 
 past_actions = {
@@ -59,6 +61,8 @@ def append_history(command: dict):
     with open(log_file, "a") as f:
         f.write(json.dumps(event) + "\n")
 
+    push_state_update("history", {"history": load_history()})
+
 
 def get_last_action():
     history = load_history()
@@ -77,9 +81,9 @@ def find_action_type(action_type: str):
 
 def show_history():
     history = load_history()
-
     if not history:
         print("No history found")
+        push_state_update("history", {"history": []})
         return
 
     print("\n=== Command History ===")
@@ -109,6 +113,7 @@ def show_history():
                 print(f"       {k}: {v}")
 
     print()
+    #push_state_update("history", {"history": history})
 
 
 def delete_history():
