@@ -23,6 +23,8 @@ function App() {
   const chatAutoScrollRef = useRef(true);
   const historyAutoScrollRef = useRef(true);
 
+  const messageLimit = 20
+
   const isNearBottom = (el, threshold = 80) => {
       return el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
   };
@@ -48,7 +50,8 @@ function App() {
           setMessages((prev) => [
             ...prev,
             { type: "user", text: data.last_input, id: Date.now() }
-          ]);
+          ].slice(-messageLimit)
+        );
         }
 
         if (data.aliases !== null && data.aliases !== undefined &&
@@ -71,7 +74,8 @@ function App() {
               setMessages((prev) => [
                 ...prev,
                 { type: "ai", text: msg, id: Date.now() + i }
-              ]);
+              ].slice(-messageLimit)
+            );
             }, i * 400);
           });
         }
@@ -124,107 +128,123 @@ function App() {
     { key: "rpd", label: "Requests / Day" }
   ];
 
+  const WEEKLY_METRICS = [
+    { key: "weekly_tokens", label: "Weekly Token Usage"},
+    { key: "weekly_calls", label: "Weekly API Calls"}
+  ];
+
   return (
     <div className="app">
       <h1 className="title">AI Dashboard</h1>
-      <div className="chat-container" ref={chatContainerRef}>
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`bubble ${msg.type === "user" ? "user" : "ai"}`}
-          >
-            {msg.text}
+      <div className="dashboard">
+        <div className="left-column">
+
+        </div>
+
+        <div className="middle-column">
+          <div className="chat-container" ref={chatContainerRef}>
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`bubble ${msg.type === "user" ? "user" : "ai"}`}
+              >
+                {msg.text}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      <div className="stats">
-        {Object.entries(dashboardState.stats).map(([model, modelStats]) => (
-          <div key={model} className="stats-card">
-            <h3 className="stats-model">{model}</h3>
-            {METRICS.map(({ key, label }) => {
-              const used = modelStats[`${key}_used`];
-              const limit = modelStats[`${key}_limit`];
-              if (used === undefined || limit === undefined || limit === 0) {
-                return null;
-              }
-              const pct = Math.min((used / limit) * 100, 100);
-              return (
-                <div className="stat-row" key={key}>
-                  <div className="stat-label">
-                    <span>{label}</span>
-                    <span>
-                      {used.toLocaleString()} / {limit.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="progress-track">
-                    <div
-                      className="progress-fill"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+          <div className="stats">
+            {Object.entries(dashboardState.stats).map(([model, modelStats]) => (
+              <div key={model} className="stats-card">
+                <h3 className="stats-model">{model}</h3>
+                {METRICS.map(({ key, label }) => {
+                  const used = modelStats[`${key}_used`];
+                  const limit = modelStats[`${key}_limit`];
+                  if (used === undefined || limit === undefined || limit === 0) {
+                    return null;
+                  }
+                  const pct = Math.min((used / limit) * 100, 100);
+                  return (
+                    <div className="stat-row" key={key}>
+                      <div className="stat-label">
+                        <span>{label}</span>
+                        <span>
+                          {used.toLocaleString()} / {limit.toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="progress-track">
+                        <div
+                          className="progress-fill"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-      {dashboardState.aliases !== null && aliasesVisible && (
-        <div className="aliases-panel">
-          <h3 className="panel-title">Aliases</h3>
-          {Object.keys(dashboardState.aliases).length === 0 ? (
-            <p className="empty-note">No aliases created</p>
-          ) : (
-            <ul className="alias-list">
-              {Object.entries(dashboardState.aliases).map(([alias, commands]) => (
-                <li key={alias} className="alias-item">
-                  <span className="alias-name">
-                    {alias.charAt(0).toUpperCase() + alias.slice(1)}
-                  </span>
-                  <span className="alias-arrow">→</span>
-                  <span className="alias-targets">
-                    {commands
-                      .map((cmd) =>
-                        cmd.target.charAt(0).toUpperCase() + cmd.target.slice(1)
-                      )
-                      .join(", ")}
-                  </span>
-                </li>
-              ))}
-            </ul>
+          {dashboardState.aliases !== null && aliasesVisible && (
+            <div className="aliases-panel">
+              <h3 className="panel-title">Aliases</h3>
+              {Object.keys(dashboardState.aliases).length === 0 ? (
+                <p className="empty-note">No aliases created</p>
+              ) : (
+                <ul className="alias-list">
+                  {Object.entries(dashboardState.aliases).map(([alias, commands]) => (
+                    <li key={alias} className="alias-item">
+                      <span className="alias-name">
+                        {alias.charAt(0).toUpperCase() + alias.slice(1)}
+                      </span>
+                      <span className="alias-arrow">→</span>
+                      <span className="alias-targets">
+                        {commands
+                          .map((cmd) =>
+                            cmd.target.charAt(0).toUpperCase() + cmd.target.slice(1)
+                          )
+                          .join(", ")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+          {dashboardState.history !== null && (
+            <div className="history-container">
+              <h3 className="panel-title">Today's History</h3>
+              <div className="history-panel" ref={historyPanelRef}>
+                {(() => {
+                  const today = new Date().toISOString().slice(0, 10);
+                  const todaysCommands = dashboardState.history.filter(
+                    (cmd) => cmd.time?.slice(0, 10) === today
+                  );
+                  return todaysCommands.length === 0 ? (
+                    <p className="empty-note">No history found</p>
+                  ) : (
+                    todaysCommands.map((cmd, i) => (
+                      <div key={i} className="history-entry">
+                        <span className="history-time">{cmd.time?.slice(11, 16)}</span>
+                        <span className="history-action">{cmd.action}</span>
+                        <span className="history-target">{cmd.target}</span>
+                        {cmd.parameters && Object.keys(cmd.parameters).length > 0 && (
+                          <div className="history-params">
+                            {Object.entries(cmd.parameters).map(([k, v]) => (
+                              <span key={k} className="history-param">{k}: {String(v)}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  );
+                })()}
+              </div>
+            </div>
           )}
         </div>
-      )}
-      {dashboardState.history !== null && (
-        <div className="history-container">
-          <h3 className="panel-title">Today's History</h3>
-          <div className="history-panel" ref={historyPanelRef}>
-            {(() => {
-              const today = new Date().toISOString().slice(0, 10);
-              const todaysCommands = dashboardState.history.filter(
-                (cmd) => cmd.time?.slice(0, 10) === today
-              );
-              return todaysCommands.length === 0 ? (
-                <p className="empty-note">No history found</p>
-              ) : (
-                todaysCommands.map((cmd, i) => (
-                  <div key={i} className="history-entry">
-                    <span className="history-time">{cmd.time?.slice(11, 16)}</span>
-                    <span className="history-action">{cmd.action}</span>
-                    <span className="history-target">{cmd.target}</span>
-                    {cmd.parameters && Object.keys(cmd.parameters).length > 0 && (
-                      <div className="history-params">
-                        {Object.entries(cmd.parameters).map(([k, v]) => (
-                          <span key={k} className="history-param">{k}: {String(v)}</span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))
-              );
-            })()}
-          </div>
+        <div className="right-column">
+
         </div>
-      )}
+      </div>
     </div>
   );
 }

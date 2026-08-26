@@ -1,4 +1,8 @@
-/* Animated gradient background */
+* {
+  box-sizing: border-box;
+}
+
+
 .app {
   min-height: 100vh;
   display: flex;
@@ -37,14 +41,55 @@
   font-weight: 600;
 }
 
+.panel-title {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.empty-note {
+  font-size: 12px;
+  opacity: 0.5;
+  margin: 0;
+}
+
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 600px) 240px;
+  gap: 24px;
+  width: 100%;
+  max-width: 1400px;
+  padding: 0 20px;
+  box-sizing: border-box;
+  align-items: start;
+}
+
+.middle-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+
+.chat-container,
+.stats,
+.history-container,
+.aliases-panel {
+  width: 100%;
+  max-width: 600px;
+}
+
+
+
 .chat-container {
   width: 100%;
-  max-width: 700px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-
   height: 250px;
   overflow-y: auto;
 }
@@ -100,11 +145,9 @@
   margin-top: 30px;
   margin-bottom: 30px;
   width: 100%;
-  max-width: 700px;
-  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .stats-card {
@@ -156,10 +199,11 @@
 
 .history-container {
   width: 100%;
-  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
   margin-top: 20px;
   margin-bottom: 20px;
-  padding: 14px 16px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   backdrop-filter: blur(8px);
@@ -179,22 +223,9 @@
   display: none;
 }
 
-.panel-title {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  font-weight: 600;
-  opacity: 0.85;
-}
-
-.empty-note {
-  font-size: 12px;
-  opacity: 0.5;
-  margin: 0;
-}
-
 .history-entry {
   font-size: 13px;
-  padding: 6px 0;
+  padding: 5px;
   display: flex;
   align-items: baseline;
   gap: 10px;
@@ -204,6 +235,7 @@
 
 .history-entry:last-child {
   border-bottom: none;
+  padding: 5px
 }
 
 .history-time {
@@ -240,7 +272,6 @@
 
 .aliases-panel {
   width: 100%;
-  max-width: 700px;
   margin-top: 20px;
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.06);

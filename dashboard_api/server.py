@@ -27,6 +27,8 @@ async def lifespan(app: FastAPI):
 
     state["history"] = get_history()
 
+    state["weekly_stats"] = get_weekly_stats()
+
     task = asyncio.create_task(periodic_stats_refresh())
 
     yield
@@ -68,12 +70,12 @@ class Event(BaseModel):
 ########## Methods ##########
 
 BACKGROUND_CHECK_INTERVAL = 5 #seconds
-
 async def periodic_stats_refresh():
     while True:
         await asyncio.sleep(BACKGROUND_CHECK_INTERVAL)
         tracker.reload()  # re-read .groq_usage.json from disk, then prune stale entries
         state["stats"] = get_formatted_stats()
+        state["weekly_stats"] = get_weekly_stats()
         await push_state()
 
 
@@ -121,6 +123,22 @@ def get_formatted_stats() -> dict:
     return stats
 
 
+def get_weekly_stats():
+    tracker.reload()
+    tracker.reset_if_needed()
+
+    weekly_stats = {}
+
+    if MODEL in tracker.tracked_models():
+        snap = tracker.snapshot(MODEL)
+        weekly_stats[MODEL] = {
+            "weekly_tokens": snap["weekly_tokens"],
+            "weekly_calls": snap["weekly_calls"]
+        }
+
+    return weekly_stats
+
+
 def get_history():
     return load_history()
 
@@ -136,9 +154,15 @@ def get_stats():
     return state["stats"]
 
 
+@app.get("/weeklystats")
+def weekly_stats():
+    return state["weekly_stats"]
+
+
 @app.on_event("startup")
 async def startup_event():
     state["stats"] = get_formatted_stats()
+    state["weekly_stats"] = get_weekly_stats()
 
 
 # REST endpoint
@@ -149,15 +173,25 @@ async def receive_event(event: Event):
     # merge incoming data into server's state
     if event.type == "last_input":
         state["last_input"] = event.data.get("last_input")
+
     elif event.type == "last_interpretation":
         state["last_interpretation"] = event.data.get("last_interpretation")
+
     elif event.type == "stats":
         model = event.data.get("model")
         stats = event.data.get("stats")
         if model and stats is not None:
             state["stats"][model] = stats
+
+    elif event.type == "weekly_stats":
+        model = event.data.get("model")
+        weekly_stats = event.data.get("weekly_stats")
+        if model and weekly_stats is not None:
+            state["weekly_stats"][model] = weekly_stats
+
     elif event.type == "aliases":
         state["aliases"] = event.data.get("aliases", {})
+        
     elif event.type == "history":
         state["history"] = event.data.get("history", [])
 

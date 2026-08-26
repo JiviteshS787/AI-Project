@@ -321,6 +321,7 @@ def interpret(user_input):
 
         update_usage_state(MODEL, tracker)
         push_state_update("stats", {"model": MODEL, "stats": copy.deepcopy(state["stats"][MODEL])})
+        push_state_update("weekly_stats", {"model": MODEL, "weekly_stats": copy.deepcopy(state["weekly_stats"][MODEL])})
 
 
         print(f"[tokens] prompt={response.usage.prompt_tokens} "

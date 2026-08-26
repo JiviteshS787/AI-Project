@@ -23,6 +23,11 @@
             "action": "open",
             "target": "chrome",
             "parameters": {}
+        },
+        {
+            "action": "open",
+            "target": "onenote",
+            "parameters": {}
         }
     ]
 }

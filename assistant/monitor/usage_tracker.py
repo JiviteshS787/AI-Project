@@ -16,7 +16,7 @@ separate test runs / script restarts within the same day.
 import json
 import re
 import time
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from pathlib import Path
 
 USAGE_FILE = Path(__file__).parent / ".groq_usage.json"
@@ -34,6 +34,12 @@ DEFAULT_LIMITS = {
 
 def _today() -> str:
     return datetime.now().strftime("%Y-%m-%d")
+
+
+def _current_week_id():
+    dt = datetime.now()
+    year, week, _ = dt.isocalendar()
+    return f"{year}-W{week}"
 
 
 def _parse_reset_duration(value: str) -> float:
@@ -90,7 +96,13 @@ class UsageTracker:
         modified = False
 
         for model, bucket in self._data.items():
-            # 1. Daily Reset (if date has rolled over)
+            current_week = _current_week_id()
+            if bucket.get("weekly_id") != current_week:
+                bucket["weekly_id"] = current_week
+                bucket["weekly_tokens"] = 0
+                bucket["weekly_calls"] = 0
+                modified = True
+
             if bucket.get("date") != today:
                 bucket["date"] = today
                 bucket["tokens_today"] = 0
@@ -100,9 +112,8 @@ class UsageTracker:
                 bucket["live_captured_at"] = None
                 bucket["tpm_reset_at"] = None
                 modified = True
-                continue
+                #continue
 
-            # 2. RPM Rolling Window Cleanup (remove timestamps > 60s old)
             recent = bucket.get("recent_request_times", [])
             fresh_recent = [t for t in recent if now - t < 60]
             if len(fresh_recent) != len(recent):
@@ -134,6 +145,7 @@ class UsageTracker:
 
     def _model_bucket(self, model: str) -> dict:
         bucket = self._data.setdefault(model, {})
+        '''
         if bucket.get("date") != _today():
             bucket["date"] = _today()
             bucket["tokens_today"] = 0
@@ -141,17 +153,25 @@ class UsageTracker:
             bucket["live"] = {}
             bucket["live_captured_at"] = None
             bucket["tpm_reset_at"] = None
+        '''
         bucket.setdefault("tokens_today", 0)
         bucket.setdefault("requests_today", 0)
         bucket.setdefault("recent_request_times", [])
         bucket.setdefault("live", {})
         bucket.setdefault("live_captured_at", None)
         bucket.setdefault("tpm_reset_at", None)
+        bucket.setdefault("weekly_tokens", 0)
+        bucket.setdefault("weekly_calls", 0)
+        bucket.setdefault("weekly_id", _current_week_id())
+
+        self.reset_if_needed()
         return bucket
 
 
     def record(self, model: str, headers: dict | None, prompt_tokens: int, completion_tokens: int):
         bucket = self._model_bucket(model)
+        self.reset_if_needed()
+
         total_tokens = prompt_tokens + completion_tokens
 
         now = time.time()
@@ -159,6 +179,9 @@ class UsageTracker:
         bucket["recent_request_times"] = [t for t in bucket["recent_request_times"] if now - t < 60]
         bucket["requests_today"] += 1
         bucket["tokens_today"] += total_tokens
+
+        bucket["weekly_tokens"] = bucket.get("weekly_tokens", 0) + total_tokens
+        bucket["weekly_calls"] = bucket.get("weekly_calls", 0) + 1
 
         if headers:
             live = bucket["live"]
@@ -220,6 +243,8 @@ class UsageTracker:
             "rpd": (rpd_used, rpd_limit),
             "tpm": (tpm_used, tpm_limit),
             "tpd": (tpd_used, tpd_limit),
+            "weekly_tokens": bucket.get("weekly_tokens", 0), 
+            "weekly_calls": bucket.get("weekly_calls", 0)
         }
 
 
