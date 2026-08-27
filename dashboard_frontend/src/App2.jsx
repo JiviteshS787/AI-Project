@@ -63,13 +63,13 @@ function App() {
         );
         }
 
-        if (data.aliases !== null && data.aliases !== undefined &&
-            JSON.stringify(data.aliases) !== JSON.stringify(prevAliasesRef.current)) {
-              prevAliasesRef.current = data.aliases;
-              setAliasesVisible(true);
-              clearTimeout(aliasesTimerRef.current);
-              aliasesTimerRef.current = setTimeout(() => setAliasesVisible(false), 7000);
-            }
+        if (data.last_alias_update && data.last_alias_update !== prevAliasCommandRef.current) {
+          prevAliasCommandRef.current = data.last_alias_update;
+          prevAliasesRef.current = data.aliases;
+          setAliasesVisible(true);
+          clearTimeout(aliasesTimerRef.current);
+          aliasesTimerRef.current = setTimeout(() => setAliasesVisible(false), 7000);
+        }
 
         if (
           Array.isArray(data.last_interpretation) &&
@@ -167,7 +167,6 @@ function App() {
             <AppAliasVisibility
               aliases={dashboardState.aliases}
             />
-
           )}
 
           

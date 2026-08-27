@@ -1,4 +1,5 @@
 import json
+import time
 
 from assistant.tools import projects, scripts, apps, files
 from assistant.command_parser import synonyms, file_synonyms
@@ -95,6 +96,8 @@ def create_alias(alias, targets):
 
     save_aliases(aliases)
 
+    push_state_update("aliases", {"aliases": aliases, "last_alias_update": time.time()})
+
     print(f"Alias created: {alias} -> {', '.join(targets)}")
     return True
 
@@ -106,6 +109,8 @@ def delete_alias(alias):
     if alias in aliases:
         del aliases[alias]
         save_aliases(aliases)
+        
+        push_state_update("aliases", {"aliases": aliases, "last_alias_update": time.time()})
 
         print(f"Deleted alias: {alias}")
         return True
@@ -117,6 +122,7 @@ def delete_alias(alias):
 #Delete history
 def delete_all_aliases():
     save_aliases({})
+    push_state_update("aliases", {"aliases": {}, "last_alias_update": time.time()})
     print("All aliases cleared")
     return True
 
@@ -130,9 +136,9 @@ def list_aliases():
         push_state_update("aliases", {"aliases": {}})
         return
 
-    print("\n=== Aliases ===")
+    '''print("\n=== Aliases ===")
 
     for alias, target in aliases.items():
-        print(f"{alias} -> {target}")
+        print(f"{alias} -> {target}")'''
 
     push_state_update("aliases", {"aliases": aliases})
