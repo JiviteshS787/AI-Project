@@ -6,6 +6,7 @@ function App() {
     last_input: "",
     last_interpretation: null,
     stats: {},
+    weekly_stats: {},
     aliases: null,
     history: null
   });
@@ -214,7 +215,8 @@ function App() {
               <h3 className="panel-title">Today's History</h3>
               <div className="history-panel" ref={historyPanelRef}>
                 {(() => {
-                  const today = new Date().toISOString().slice(0, 10);
+                  const now = new Date();
+                  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
                   const todaysCommands = dashboardState.history.filter(
                     (cmd) => cmd.time?.slice(0, 10) === today
                   );
@@ -242,7 +244,25 @@ function App() {
           )}
         </div>
         <div className="right-column">
-
+          <div className="weekly-panel">
+            {Object.entries(dashboardState.weekly_stats).map(([model, weekly]) => (
+              <div key={model} className="weekly-card">
+                <h3 className="weekly-model">{model}</h3>
+                {WEEKLY_METRICS.map(({ key, label }) => {
+                  const value = weekly[key];
+                  if (value === undefined) {
+                    return null;
+                  }
+                  return (
+                    <div className="weekly-row" key={key}>
+                      <span className="weekly-label">{label}</span>
+                      <span className="weekly-value">{value.toLocaleString()}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

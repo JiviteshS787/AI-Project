@@ -39,6 +39,8 @@ def execute(function): #function is a JSON obj, action and target are the attrib
         alias = function["target"]
         target = function["parameters"]["alias_for"]
 
+        print(f"Alias: {alias}, Target: {target}")
+
         created = create_alias(alias, target)
 
         if created:

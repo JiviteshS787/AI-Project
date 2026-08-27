@@ -265,7 +265,6 @@ def parse_input(input):
                 formatted_commands.append(format_command(command))
 
             state["last_interpretation"] = formatted_commands
-            print(state)
             push_state_update("last_interpretation", {"last_interpretation": formatted_commands})
 
             if confirm_command(updated_commands):
@@ -355,10 +354,19 @@ def validate_command(command):
     TARGET_ACTIONS = get_target_actions()
 
     if action == "create_alias":
-        for entry in parameters:
+        alias_targets = parameters.get("alias_for") or []
+        if not alias_targets:
+            return False
+        for entry in alias_targets:
             if entry.lower().strip() not in get_all_files():
                 return False
         return True
+    
+    elif action == "delete_alias":
+        alias = target.strip().lower()
+        if alias in load_aliases():
+            return True
+        return False
 
     elif action == "none":
         if target is not None:

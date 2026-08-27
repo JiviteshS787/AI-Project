@@ -61,7 +61,9 @@ def append_history(command: dict):
     with open(log_file, "a") as f:
         f.write(json.dumps(event) + "\n")
 
+    print("Here")
     push_state_update("history", {"history": load_history()})
+    print("Appended")
 
 
 def get_last_action():

@@ -28,6 +28,32 @@
             "action": "open",
             "target": "onenote",
             "parameters": {}
+        },
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {}
+        }
+    ],
+    "habit": [
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {}
+        }
+    ],
+    "task": [
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {}
+        }
+    ],
+    "money": [
+        {
+            "action": "open",
+            "target": "chrome",
+            "parameters": {}
         }
     ]
 }

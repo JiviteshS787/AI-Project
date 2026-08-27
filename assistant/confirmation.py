@@ -34,11 +34,16 @@ def format_command(command):
 
         return text
 
-    if action in ["create_alias", "delete_alias"]:
-        alias_target = parameters.get("alias_for", "")
-        alias_target = alias_target.title()
+    if action == "create_alias":
+        alias_targets = parameters.get("alias_for", "")
+        aliases = alias_targets[0].title()
+        for alias in alias_targets[1:]:
+            aliases += "," + alias.title()
 
-        return f"{action_text} {target_text} -> {alias_target}"
+        return f"{action_text} {target_text} -> {aliases}"
+
+    if action == "delete_alias":
+        return f"{action_text} {target_text}"
 
     if action == "set_volume":
         volume_level = parameters.get("level")

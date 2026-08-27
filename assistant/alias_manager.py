@@ -65,36 +65,37 @@ def save_aliases(aliases):
 
 
 #Create new alias
-def create_alias(alias, target):
+def create_alias(alias, targets):
     aliases = load_aliases()
 
     if not valid_alias_name(alias):
         return False
-    
-    item = target.lower().strip()
-    
-    action = "open"
-    if item in projects:
-        action = "start_project"
-    elif item in scripts:
-        action = "run_script"
 
-    new_command = {
-        "action": action,
-        "target": target,
-        "parameters": {}
-    }
+    if alias not in aliases:
+        aliases[alias] = []
 
-    if alias in aliases:
+    for target in targets:
+        item = target.lower().strip()
+
+        action = "open"
+        if item in projects:
+            action = "start_project"
+        elif item in scripts:
+            action = "run_script"
+
+        new_command = {
+            "action": action,
+            "target": target,
+            "parameters": {}
+        }
+
         # Prevent duplicates
         if new_command not in aliases[alias]:
             aliases[alias].append(new_command)
-    else:
-        aliases[alias] = [new_command]
 
     save_aliases(aliases)
 
-    print(f"Alias created: {alias} -> {target}")
+    print(f"Alias created: {alias} -> {', '.join(targets)}")
     return True
 
 
