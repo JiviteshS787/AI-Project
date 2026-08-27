@@ -73,6 +73,12 @@
   width: 100%;
 }
 
+.right-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
 
 .chat-container,
 .stats,
@@ -142,8 +148,8 @@
 
 
 .stats {
-  margin-top: 30px;
-  margin-bottom: 30px;
+  margin-top: 20px;
+  margin-bottom: 20px;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -271,15 +277,15 @@
 
 
 .aliases-panel {
-  width: 100%;
   margin-top: 20px;
+  margin-bottom: 20px;
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   backdrop-filter: blur(8px);
 }
 
-.alias-panel::-webkit-scrollbar {
+.aliases-panel::-webkit-scrollbar {
   display:none;
 }
 
@@ -310,6 +316,7 @@
 .alias-targets {
   opacity: 0.8;
 }
+
 
 
 .weekly-panel {
@@ -351,4 +358,61 @@
 
 .weekly-value {
   font-weight: 600;
+}
+
+
+
+.top-stats-group {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px 16px;
+  backdrop-filter: blur(8px);
+  width: 100%;
+}
+
+.top-stats-type {
+  margin-top: 10px;
+}
+
+.top-stats-type-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.top-stats-list {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.top-stats-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.top-stats-item:last-child {
+  border-bottom: none;
+}
+
+.top-stats-name {
+  opacity: 0.85;
+  text-transform: capitalize;
+}
+
+.top-stats-count {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.left-column {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }

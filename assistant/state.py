@@ -17,5 +17,7 @@ state = {
     "stats": {},
     "weekly_stats": {},
     "aliases": None,
-    "history": []
+    "history": [],
+    "daily_summary": {},
+    "weekly_summary": {}
 }

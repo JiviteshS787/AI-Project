@@ -16,7 +16,7 @@ from assistant.monitor.usage_tracker import UsageTracker, DEFAULT_LIMITS
 
 from assistant.brain.brain_groq_json import MODEL
 
-from assistant.history import load_history
+from assistant.history import load_history, daily_summary, weekly_summary
 
 
 ########## Handle Lifespan ##########
@@ -28,6 +28,10 @@ async def lifespan(app: FastAPI):
     state["history"] = get_history()
 
     state["weekly_stats"] = get_weekly_stats()
+
+    state["daily_summary"] = get_daily_summary()
+
+    state["weekly_summary"] = get_weekly_summary()
 
     task = asyncio.create_task(periodic_stats_refresh())
 
@@ -142,6 +146,14 @@ def get_weekly_stats():
 def get_history():
     return load_history()
 
+
+def get_weekly_summary():
+    return weekly_summary()
+
+
+def get_daily_summary():
+    return daily_summary()
+
 ########## Endpoints ##########
 
 @app.get("/")
@@ -149,20 +161,9 @@ def home():
     return {"status": "dashboard running"}
 
 
-@app.get("/stats")
-def get_stats():
-    return state["stats"]
-
-
-@app.get("/weeklystats")
-def weekly_stats():
-    return state["weekly_stats"]
-
-
-@app.on_event("startup")
-async def startup_event():
-    state["stats"] = get_formatted_stats()
-    state["weekly_stats"] = get_weekly_stats()
+@app.get("/logs")
+def get_logs(): 
+    return {"status": logs}
 
 
 # REST endpoint
