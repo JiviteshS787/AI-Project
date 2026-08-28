@@ -5,6 +5,8 @@
     "start_project": "Starting project",
     "stop_project": "Stopping project",
     "run_script": "Running script",
+    "run_alias": "Opening alias",
+    "stop_alias": "Stopping alias",
 
     "list_running_processes": "Listing running processes",
     "show_history": "Showing history",

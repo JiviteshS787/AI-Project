@@ -109,7 +109,7 @@ TESTS = [
 '''
 
 TESTS = [
-    ("Alias deleting", "Can you delete my tasks alias")
+    ("Alias deleting", "Lets remove my school alias")
 ]
 
 

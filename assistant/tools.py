@@ -80,7 +80,7 @@ def open_item(name, parameters=None):
     '''
     Open anything (app/file)
     '''
-
+    print(f"App Name: {name}")
     if name not in openables:
         print(f"Cannot find {name}")
         return False

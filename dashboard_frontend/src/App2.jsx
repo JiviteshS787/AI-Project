@@ -3,6 +3,7 @@ import TopStatsPanel from "./AppUsagePanel";
 import WeeklyTokenUsage from "./AppWeeklyTokenUsage";
 import DailyTokenUsage from "./AppDailyTokenUsage";
 import AppAliasVisibility from "./AppAliasVisibility";
+import AppHistory from "./AppHistory";
 
 import "./App.css";
 
@@ -13,6 +14,7 @@ function App() {
     stats: {},
     weekly_stats: {},
     aliases: null,
+    last_alias_update: null,
     history: null,
     daily_summary: {},
     weekly_summary: {}
@@ -26,6 +28,7 @@ function App() {
   const [aliasesVisible, setAliasesVisible] = useState(false);
   const aliasesTimerRef = useRef(null);
   const prevAliasesRef = useRef(null);
+  const prevAliasCommandRef = useRef(null);
 
   const chatContainerRef = useRef(null);
   const historyPanelRef = useRef(null);
@@ -52,7 +55,7 @@ function App() {
       const data = JSON.parse(event.data);
 
       if (data.type === "state") {
-        setDashboardState(data);
+        setDashboardState((prev) => ({ ...prev, ...data }));
 
         if (data.last_input && data.last_input !== prevInputRef.current) {
           prevInputRef.current = data.last_input;
@@ -130,13 +133,6 @@ function App() {
   }, [dashboardState.history]);
 
 
-  const METRICS = [
-    { key: "tpm", label: "Tokens / Min" },
-    { key: "tpd", label: "Tokens / Day" },
-    { key: "rpm", label: "Requests / Min" },
-    { key: "rpd", label: "Requests / Day" }
-  ];
-
 
   return (
     <div className="app">
@@ -169,39 +165,15 @@ function App() {
             />
           )}
 
-          
           {dashboardState.history !== null && (
-            <div className="history-container">
-              <h3 className="panel-title">Today's History</h3>
-              <div className="history-panel" ref={historyPanelRef}>
-                {(() => {
-                  const now = new Date();
-                  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-                  const todaysCommands = dashboardState.history.filter(
-                    (cmd) => cmd.time?.slice(0, 10) === today
-                  );
-                  return todaysCommands.length === 0 ? (
-                    <p className="empty-note">No history found</p>
-                  ) : (
-                    todaysCommands.map((cmd, i) => (
-                      <div key={i} className="history-entry">
-                        <span className="history-time">{cmd.time?.slice(11, 16)}</span>
-                        <span className="history-action">{cmd.action}</span>
-                        <span className="history-target">{cmd.target}</span>
-                        {cmd.parameters && Object.keys(cmd.parameters).length > 0 && (
-                          <div className="history-params">
-                            {Object.entries(cmd.parameters).map(([k, v]) => (
-                              <span key={k} className="history-param">{k}: {String(v)}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  );
-                })()}
-              </div>
-            </div>
+            <AppHistory
+              history={dashboardState.history}
+              panelRef={historyPanelRef}
+            />
           )}
+
+          
+          
         </div>
 
         <WeeklyTokenUsage 
@@ -275,6 +247,41 @@ export default App;
                   ))}
                 </ul>
               )}
+            </div>
+          )}
+*/
+
+/*
+{dashboardState.history !== null && (
+            <div className="history-container">
+              <h3 className="panel-title">Today's History</h3>
+              <div className="history-panel" ref={historyPanelRef}>
+                {(() => {
+                  const now = new Date();
+                  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+                  const todaysCommands = dashboardState.history.filter(
+                    (cmd) => cmd.time?.slice(0, 10) === today
+                  );
+                  return todaysCommands.length === 0 ? (
+                    <p className="empty-note">No history found</p>
+                  ) : (
+                    todaysCommands.map((cmd, i) => (
+                      <div key={i} className="history-entry">
+                        <span className="history-time">{cmd.time?.slice(11, 16)}</span>
+                        <span className="history-action">{cmd.action}</span>
+                        <span className="history-target">{cmd.target}</span>
+                        {cmd.parameters && Object.keys(cmd.parameters).length > 0 && (
+                          <div className="history-params">
+                            {Object.entries(cmd.parameters).map(([k, v]) => (
+                              <span key={k} className="history-param">{k}: {String(v)}</span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  );
+                })()}
+              </div>
             </div>
           )}
 */

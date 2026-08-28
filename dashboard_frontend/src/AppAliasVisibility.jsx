@@ -1,5 +1,8 @@
 
 export function AliasVisibility({data}){
+  if(!data){
+    return null
+  }
   return(
     <div className="aliases-panel">
       <h3 className="panel-title">Aliases</h3>

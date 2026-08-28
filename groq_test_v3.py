@@ -92,6 +92,12 @@ HISTORY_EDGE_CASES = [
     "move_window_to_monitor"
 ]
 
+INVERT_COMMANDS = {
+    "open": "close",
+    "start_project": "stop_project"
+}
+
+
 # ---------- config ----------
 SAMPLE_RATE = 16000
 FRAME_DURATION_MS = 30
@@ -267,12 +273,42 @@ def parse_input(input):
             state["last_interpretation"] = formatted_commands
             push_state_update("last_interpretation", {"last_interpretation": formatted_commands})
 
+            final_commands = alias_converter(updated_commands)
+
             if confirm_command(updated_commands):
-                for cmd in updated_commands:
+                for cmd in final_commands:
                     execute(cmd)
                     time.sleep(1)
-
     return
+
+
+def alias_converter(commands):
+    aliases = load_aliases()
+    expanded = []
+
+    for cmd in commands:
+        if cmd.get("action") == "run_alias":
+            alias_name = cmd.get("target")
+            alias_commands = aliases.get(alias_name, [])
+            expanded.extend(alias_commands)
+        elif cmd.get("action") == "stop_alias":
+            alias_name = cmd.get("target")
+            alias_commands = aliases.get(alias_name, [])
+
+            for entry in alias_commands:
+                inverted_action = INVERT_COMMANDS.get(entry.get("action"))
+                if inverted_action is None:
+                    continue
+
+                expanded.append({
+                    "action": inverted_action,
+                    "target": entry.get("target"),
+                    "parameters": entry.get("parameters", {}),
+                })
+        else:
+            expanded.append(cmd)
+
+    return expanded
 
 
 def get_accepted_parameters(action, target):
@@ -361,8 +397,8 @@ def validate_command(command):
             if entry.lower().strip() not in get_all_files():
                 return False
         return True
-    
-    elif action == "delete_alias":
+
+    elif action == "run_alias" or action == "stop_alias" or action == "delete_alias":
         alias = target.strip().lower()
         if alias in load_aliases():
             return True
@@ -472,5 +508,4 @@ while True:
             print("Shutting down assistant...")
             break
 
-        parse_input(command)
-'''
+        parse_input(command)'''

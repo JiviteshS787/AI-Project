@@ -24,14 +24,14 @@ from assistant.history import load_history, daily_summary, weekly_summary
 async def lifespan(app: FastAPI):
     # Runs on server startup
     state["stats"] = get_formatted_stats()
-
     state["history"] = get_history()
-
     state["weekly_stats"] = get_weekly_stats()
-
     state["daily_summary"] = get_daily_summary()
-
     state["weekly_summary"] = get_weekly_summary()
+    state["aliases"] = None
+    state["last_input"] = None
+    state["last_interpretation"] = None
+    state["last_alias_update"] = None
 
     task = asyncio.create_task(periodic_stats_refresh())
 
@@ -74,13 +74,24 @@ class Event(BaseModel):
 ########## Methods ##########
 
 BACKGROUND_CHECK_INTERVAL = 5 #seconds
-async def periodic_stats_refresh():
+'''async def periodic_stats_refresh():
     while True:
         await asyncio.sleep(BACKGROUND_CHECK_INTERVAL)
         tracker.reload()  # re-read .groq_usage.json from disk, then prune stale entries
         state["stats"] = get_formatted_stats()
         state["weekly_stats"] = get_weekly_stats()
-        await push_state()
+        await push_state()'''
+
+async def periodic_stats_refresh():
+    while True:
+        await asyncio.sleep(BACKGROUND_CHECK_INTERVAL)
+        tracker.reload()
+        state["stats"] = get_formatted_stats()
+        state["weekly_stats"] = get_weekly_stats()
+        await broadcast({
+            "type": "state",
+            **{k: v for k, v in state.items() if k not in ("aliases", "last_alias_update")}
+        })
 
 
 def classify(event: Event):
@@ -166,6 +177,11 @@ def get_logs():
     return {"status": logs}
 
 
+@app.get("/stats")
+def get_stats():
+    return state["stats"]
+
+
 # REST endpoint
 @app.post("/event")
 async def receive_event(event: Event):
@@ -192,9 +208,16 @@ async def receive_event(event: Event):
 
     elif event.type == "aliases":
         state["aliases"] = event.data.get("aliases", {})
+        state["last_alias_update"] = event.data.get("last_alias_update")
         
     elif event.type == "history":
         state["history"] = event.data.get("history", [])
+
+    elif event.type == "daily_summary":
+        state["daily_summary"] = event.data.get("daily_summary", {})
+    
+    elif event.type == "weekly_summary":
+        state["weekly_summary"] = event.data.get("weekly_summary", {})
 
     payload = event.model_dump()
     payload["time"] = datetime.now().isoformat()
@@ -210,8 +233,9 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     clients.append(websocket)
 
+    initial_state = {k: v for k, v in state.items() if k not in ("aliases", "last_alias_update")}
     try:
-        await websocket.send_text(json.dumps({"type": "state", **state}))
+        await websocket.send_text(json.dumps({"type": "state", **initial_state}))
         while True:
             await websocket.receive_text()  # keep alive
     except WebSocketDisconnect:

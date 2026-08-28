@@ -65,6 +65,7 @@ def save_aliases(aliases):
         json.dump(aliases, file, indent=4)
 
 
+
 #Create new alias
 def create_alias(alias, targets):
     aliases = load_aliases()
@@ -133,7 +134,7 @@ def list_aliases():
 
     if not aliases:
         print("No aliases created")
-        push_state_update("aliases", {"aliases": {}})
+        push_state_update("aliases", {"aliases": {}, "last_alias_update": time.time()})
         return
 
     '''print("\n=== Aliases ===")
@@ -141,4 +142,4 @@ def list_aliases():
     for alias, target in aliases.items():
         print(f"{alias} -> {target}")'''
 
-    push_state_update("aliases", {"aliases": aliases})
+    push_state_update("aliases", {"aliases": aliases, "last_alias_update": time.time()})

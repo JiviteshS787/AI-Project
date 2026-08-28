@@ -1,5 +1,7 @@
 import json
 
+from assistant.alias_manager import load_aliases
+
 with open("data/confirmations.json", "r") as file:
     confirmations = json.load(file)
 
@@ -40,10 +42,20 @@ def format_command(command):
         for alias in alias_targets[1:]:
             aliases += "," + alias.title()
 
-        return f"{action_text} {target_text} -> {aliases}"
+        return f"{action_text}: {target_text} -> {aliases}"
 
     if action == "delete_alias":
-        return f"{action_text} {target_text}"
+        return f"{action_text}: {target_text}"
+
+    if action == "run_alias" or action == "stop_alias":
+        all_aliases = load_aliases()
+        alias_entries = all_aliases.get(target.strip().lower())
+
+        aliases = alias_entries[0].get("target").title()
+        for entry in alias_entries[1:]:
+            aliases += ", " + entry.get("target").title()
+
+        return f"{action_text}: {target_text} -> {aliases}"
 
     if action == "set_volume":
         volume_level = parameters.get("level")

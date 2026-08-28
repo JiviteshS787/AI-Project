@@ -1,18 +1,4 @@
 {
-    "habits": [
-        {
-            "action": "open",
-            "target": "notion",
-            "parameters": {}
-        }
-    ],
-    "tasks": [
-        {
-            "action": "open",
-            "target": "notion",
-            "parameters": {}
-        }
-    ],
     "school": [
         {
             "action": "open",
@@ -32,6 +18,32 @@
         {
             "action": "open",
             "target": "notion",
+            "parameters": {}
+        }
+    ],
+    "tasks": [
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {}
+        }
+    ],
+    "habits": [
+        {
+            "action": "open",
+            "target": "notion",
+            "parameters": {}
+        }
+    ],
+    "microsoft": [
+        {
+            "action": "open",
+            "target": "outlook",
+            "parameters": {}
+        },
+        {
+            "action": "open",
+            "target": "onenote",
             "parameters": {}
         }
     ]

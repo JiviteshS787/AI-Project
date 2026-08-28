@@ -130,7 +130,6 @@ def load_history():
     except:
         return []
 
-
 def append_history(command: dict):
     """
     Writes a single event to history.log
@@ -156,7 +155,7 @@ def append_history(command: dict):
         f.write(json.dumps(event) + "\n")
 
     push_state_update("history", {"history": load_history()})
-    push_state_update("daily_summary", {"daily_summery": daily_summary()})
+    push_state_update("daily_summary", {"daily_summary": daily_summary()})
     push_state_update("weekly_summary", {"weekly_summary": weekly_summary()})
 
 

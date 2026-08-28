@@ -9,6 +9,8 @@ from assistant.state import update_usage_state, state
 
 from dashboard_api.push_updates import push_state_update
 
+from assistant.alias_manager import load_aliases
+
 
 # ============================================================
 # Groq
@@ -118,7 +120,7 @@ SEPARATE commands that both get executed (multiple array elements, both kept).
 CANONICAL ACTIONS (exact, never renamed):
 open, close, start_project, stop_project, run_script,
 list_running_processes, show_history, delete_history,
-create_alias, delete_alias, list_aliases, delete_all_aliases, run_alias,
+create_alias, delete_alias, list_aliases, delete_all_aliases, run_alias, stop_alias,
 volume_up, volume_down, mute_volume, unmute_volume, set_volume,
 brightness_up, brightness_down, set_brightness,
 focus_window, minimize_window, maximize_window, snap_window,
@@ -149,10 +151,40 @@ create alias X for A,B,C -> create_alias target=X {"alias_for":["A","B","C"]}
   listed after "for" goes in "alias_for" — including the first one. Never
   place an app name in "target" for create_alias.
 
-delete alias X -> delete_alias | list aliases -> list_aliases
+delete/remove alias X permanently (explicit "delete"/"remove" + "alias") -> delete_alias
+  ONLY trigger delete_alias when the word "delete" or "remove" is used
+  together with "alias" explicitly, e.g. "delete alias school",
+  "remove the school alias", "delete my school alias".
+
+open/run/execute/start my X where X is a known alias 
+ (in context.targets.aliases) -> run_alias, target=X
+ This include "open school", "run school", "execute school", "get school started"
+ DO NOT USE start_project, open, or run_script for something in context.targets.aliases
+ EXAMPLES:
+ "lets get microsoft running" -> {"commands":[{"action":"run_alias","target":"microsoft","parameters":{}}]}
+ "start my school alias" -> {"commands":[{"action":"run_alias","target":"school","parameters":{}}]}
+ "run my habits shortcut" -> {"commands":[{"action":"run_alias","target":"habits","parameters":{}}]}
+
+
+stop/close/end/get rid of/shut down X, where X is a known alias
+  (in context.targets.aliases) -> stop_alias target=X
+  This covers "close school", "stop school", "get rid of school",
+  "close my school alias", "end school", "shut down school" — ANY
+  phrasing that does not contain the explicit word "delete"/"remove"
+  paired with "alias". Do NOT use delete_alias for these.
+  EXAMPLES:
+  "let's get rid of school" -> {"commands":[{"action":"stop_alias","target":"school","parameters":{}}]}
+  "close school" -> {"commands":[{"action":"stop_alias","target":"school","parameters":{}}]}
+  "close my school alias" -> {"commands":[{"action":"stop_alias","target":"school","parameters":{}}]}
+  "stop school" -> {"commands":[{"action":"stop_alias","target":"school","parameters":{}}]}
+  "delete the school alias" -> {"commands":[{"action":"delete_alias","target":"school","parameters":{}}]}
+  "remove alias school" -> {"commands":[{"action":"delete_alias","target":"school","parameters":{}}]}
+Do NOT confuse stop_alias with stop_project — stop_project only applies
+when X matches context.targets.projects, not context.targets.aliases.
+  
+list aliases -> list_aliases
+
 clear all aliases -> delete_all_aliases
-run/start my [alias] setup, or bare name matching context.targets.aliases
-  -> run_alias target=alias name
 lock computer -> lock_system | sleep computer -> sleep_system
 restart computer -> restart_system | shutdown computer -> shutdown_system
 list processes -> list_running_processes | list monitors -> list_monitors
@@ -259,6 +291,7 @@ with the "commands" array — no exceptions.
 # ============================================================
 
 def build_context():
+    aliases = load_aliases()
     return {
         "targets": {
             "apps": list(apps.keys()),
