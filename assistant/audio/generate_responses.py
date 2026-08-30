@@ -1,35 +1,34 @@
-# generate_acks.py
 import os
 from groq import Groq
 
-client = Groq(api_key=os.environ("GROQ_API_KEY_2"))  # reuse one of your rotation keys
+client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
 
-VOICE = "troy"
+VOICE = "diana"
 
-MODEL = "canopylabs/orpheus-v1-english"  # pick one you like — see note below on listing voices
+MODEL = "canopylabs/orpheus-v1-english"
 
 ACKS = {
     "generic": [
-        "[professionally] Understood",
-        "Right away sir",
-        "Certainly",
-        "Working on it",
+        "[professionally] Understood.",
+        "Right away, sir.",
+        "Certainly.",
+        "Working on it.",
     ],
     "restart": [
-        "[professionally] Restarting now",
-        "See you in a minute"
+        "[professionally] Restarting now.",
+        "See you in a minute.",
     ],
     "shutdown": [
-        "[professionally] Shutting down goodbye sir",
-        "Goodbye Sir"
+        "[professionally] Shutting down. Goodbye, sir.",
+        "Goodbye, sir.",
     ],
     "sleep": [
-        "Putting the system to sleep see you later sir.",
-        "[calmly] Entering sleep mode"
+        "Putting the system to sleep. See you later, sir.",
+        "[calmly] Entering sleep mode.",
     ],
     "lock": [
-        "[professionally] Alright locking up sir",
-        "Locking the system sir.",
+        "[professionally] Alright, locking up, sir.",
+        "Locking the system, sir.",
     ],
 }
 
