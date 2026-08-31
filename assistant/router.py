@@ -8,6 +8,12 @@ from assistant.system_tools.window import focus_window, minimize_window, maximiz
 from assistant.system_tools.power import sleep_system, lock_system, restart_system, shutdown_system
 from assistant.system_tools.clipboard import get_clipboard, set_clipboard, clear_clipboard
 
+from assistant.brain.web_search_handler import classify_query
+
+from assistant.external_connectors.news_handler import handle_news
+from assistant.external_connectors.sports_handler import handle_sports
+from assistant.external_connectors.weather_handler import handle_weather
+
 
 def execute(function): #function is a JSON obj, action and target are the attributes of said obj
     '''
@@ -200,6 +206,24 @@ def execute(function): #function is a JSON obj, action and target are the attrib
     elif action == "move_window_to_monitor":
         move_window_to_monitor(function["target"], function["parameters"]["monitor"])
         append_history(function)
+
+    #######################################
+    #             Web Search              #
+    #######################################
+    elif action == "search":
+        parameters = function["parameters"] or {}
+        routed = classify_query(parameters.get("query"))  # calls 120b
+        sub_action = routed["action"]
+        sub_params = routed["parameters"]
+
+        if sub_action == "weather":
+            answer = handle_weather(sub_params.get("location"))
+        elif sub_action == "sports":
+            answer = handle_sports(sub_params.get("team"), sub_params.get("league"), sub_params.get("sport"))
+        elif sub_action == "news":
+            answer = handle_news(sub_params.get("topic"))
+        else:  # general_search
+            print("Nothing for now.")
 
 
     else:

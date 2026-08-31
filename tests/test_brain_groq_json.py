@@ -109,7 +109,9 @@ TESTS = [
 '''
 
 TESTS = [
-    ("Alias deleting", "Lets remove my school alias")
+    ("Searching", "Whats the score to the barca game?"),
+    ("Searching 2", "Whats the weather looking like?"),
+    ("Searching 3", "How much does a mcdonalds big mac cost?")
 ]
 
 

@@ -404,6 +404,10 @@ def validate_command(command):
             return True
         return False
 
+    elif action == "search":
+        if parameters.get("query"):
+            return True
+
     elif action == "none":
         if target is not None:
             return False

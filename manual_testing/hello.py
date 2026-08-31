@@ -1,1 +1,0 @@
-print("Hello, I was launched through your command")
