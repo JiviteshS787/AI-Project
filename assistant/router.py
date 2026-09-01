@@ -11,7 +11,6 @@ from assistant.system_tools.clipboard import get_clipboard, set_clipboard, clear
 from assistant.brain.web_search_handler import classify_query
 
 from assistant.external_connectors.news_handler import handle_news
-from assistant.external_connectors.sports_handler import handle_sports
 from assistant.external_connectors.weather_handler import handle_weather
 
 
@@ -213,17 +212,19 @@ def execute(function): #function is a JSON obj, action and target are the attrib
     elif action == "search":
         parameters = function["parameters"] or {}
         routed = classify_query(parameters.get("query"))  # calls 120b
+        print(f"Interpreted: {routed}")
         sub_action = routed["action"]
         sub_params = routed["parameters"]
+        answer = ""
 
         if sub_action == "weather":
             answer = handle_weather(sub_params.get("location"))
-        elif sub_action == "sports":
-            answer = handle_sports(sub_params.get("team"), sub_params.get("league"), sub_params.get("sport"))
         elif sub_action == "news":
             answer = handle_news(sub_params.get("topic"))
         else:  # general_search
             print("Nothing for now.")
+
+        return answer
 
 
     else:

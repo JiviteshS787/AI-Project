@@ -18,17 +18,6 @@ weather -> query is about current/forecast weather conditions
   "what's the weather" -> {"action":"weather","parameters":{}}
   "what's the weather in Toronto" -> {"action":"weather","parameters":{"location":"Toronto"}}
 
-sports -> query is about a live/recent game score, match result, or standings
-  parameters: {"team":"<team name>", "sport":"<sport type>", "league":"<league name>"}
-  sport must be one of: football, basketball, baseball, hockey, tennis, mma
-  (map "soccer"/"futbol" -> football; infer sport from team/league context if not stated)
-  league is the specific competition (e.g. "La Liga", "Premier League", "NBA",
-  "NHL") — include it ONLY if mentioned or clearly implied by the team name;
-  omit "league" entirely if not determinable
-  "what's the score to the barca game" -> {"action":"sports","parameters":{"team":"barcelona","sport":"football","league":"La Liga"}}
-  "did the lakers win" -> {"action":"sports","parameters":{"team":"lakers","sport":"basketball","league":"NBA"}}
-  "what's the score in the leafs game" -> {"action":"sports","parameters":{"team":"maple leafs","sport":"hockey","league":"NHL"}}
-
 news -> query is asking for current events, headlines, or news on a subject
   parameters: {"topic":"<subject>", "count":<number>} — omit "topic" if asking
   for general headlines. Omit "count" unless the speaker specifies how many
