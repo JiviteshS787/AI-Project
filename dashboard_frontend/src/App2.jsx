@@ -17,7 +17,8 @@ function App() {
     last_alias_update: null,
     history: null,
     daily_summary: {},
-    weekly_summary: {}
+    weekly_summary: {},
+    active_key: null
   });
 
   const [messages, setMessages] = useState([]);
@@ -49,6 +50,13 @@ function App() {
       )
       .catch(() => {});
 
+    fetch("http://localhost:8000/weekly_stats")
+      .then((response) => response.json())
+      .then((weekly_stats) =>
+        setDashboardState((prev) => ({ ...prev, weekly_stats }))
+      )
+      .catch(() => {});
+    
     const ws = new WebSocket("ws://localhost:8000/ws");
 
     ws.onmessage = (event) => {
@@ -156,7 +164,11 @@ function App() {
           </div>
 
           <DailyTokenUsage 
-            stats={dashboardState.stats}
+            stats={
+              dashboardState.stats?.[MODEL]?.[dashboardState.active_key]
+                ? { [MODEL]: dashboardState.stats[MODEL][dashboardState.active_key] }
+                : {}
+            }
           />
 
           {dashboardState.aliases !== null && aliasesVisible && (
@@ -177,7 +189,11 @@ function App() {
         </div>
 
         <WeeklyTokenUsage 
-          weekly_usage = {dashboardState.weekly_stats}
+          weekly_usage={
+            dashboardState.weekly_stats?.[MODEL]?.[dashboardState.active_key]
+              ? { [MODEL]: dashboardState.weekly_stats[MODEL][dashboardState.active_key] }
+              : {}
+          }
         />
         
       </div>
@@ -186,102 +202,3 @@ function App() {
 }
 
 export default App;
-
-
-/*
-<div className="stats">
-            {Object.entries(dashboardState.stats).map(([model, modelStats]) => (
-              <div key={model} className="stats-card">
-                <h3 className="stats-model">{model}</h3>
-                {METRICS.map(({ key, label }) => {
-                  const used = modelStats[`${key}_used`];
-                  const limit = modelStats[`${key}_limit`];
-                  if (used === undefined || limit === undefined || limit === 0) {
-                    return null;
-                  }
-                  const pct = Math.min((used / limit) * 100, 100);
-                  return (
-                    <div className="stat-row" key={key}>
-                      <div className="stat-label">
-                        <span>{label}</span>
-                        <span>
-                          {used.toLocaleString()} / {limit.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="progress-track">
-                        <div
-                          className="progress-fill"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-*/
-
-/*
-{dashboardState.aliases !== null && aliasesVisible && (
-            <div className="aliases-panel">
-              <h3 className="panel-title">Aliases</h3>
-              {Object.keys(dashboardState.aliases).length === 0 ? (
-                <p className="empty-note">No aliases created</p>
-              ) : (
-                <ul className="alias-list">
-                  {Object.entries(dashboardState.aliases).map(([alias, commands]) => (
-                    <li key={alias} className="alias-item">
-                      <span className="alias-name">
-                        {alias.charAt(0).toUpperCase() + alias.slice(1)}
-                      </span>
-                      <span className="alias-arrow">→</span>
-                      <span className="alias-targets">
-                        {commands
-                          .map((cmd) =>
-                            cmd.target.charAt(0).toUpperCase() + cmd.target.slice(1)
-                          )
-                          .join(", ")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-*/
-
-/*
-{dashboardState.history !== null && (
-            <div className="history-container">
-              <h3 className="panel-title">Today's History</h3>
-              <div className="history-panel" ref={historyPanelRef}>
-                {(() => {
-                  const now = new Date();
-                  const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
-                  const todaysCommands = dashboardState.history.filter(
-                    (cmd) => cmd.time?.slice(0, 10) === today
-                  );
-                  return todaysCommands.length === 0 ? (
-                    <p className="empty-note">No history found</p>
-                  ) : (
-                    todaysCommands.map((cmd, i) => (
-                      <div key={i} className="history-entry">
-                        <span className="history-time">{cmd.time?.slice(11, 16)}</span>
-                        <span className="history-action">{cmd.action}</span>
-                        <span className="history-target">{cmd.target}</span>
-                        {cmd.parameters && Object.keys(cmd.parameters).length > 0 && (
-                          <div className="history-params">
-                            {Object.entries(cmd.parameters).map(([k, v]) => (
-                              <span key={k} className="history-param">{k}: {String(v)}</span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  );
-                })()}
-              </div>
-            </div>
-          )}
-*/

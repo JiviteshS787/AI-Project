@@ -108,10 +108,126 @@ TESTS = [
 ]
 '''
 
+
 TESTS = [
-    ("Searching", "Whats the score to the barca game?"),
-    ("Searching 2", "Whats the weather looking like?"),
-    ("Searching 3", "How much does a mcdonalds big mac cost?")
+    # --- OPEN / CLOSE ---
+    ("Open natural", "can you go ahead and bring Chrome up"),
+    ("Close natural", "I'm done with Chrome, close it"),
+    ("Open with filler", "um could you like open up Notion for me"),
+    ("Close terse", "quit Spotify"),
+
+    # --- PROJECTS / SCRIPTS ---
+    ("Start project", "boot up the hand tracking project"),
+    ("Stop project", "stop the hand tracking project"),
+    ("Run script", "run my backup script"),
+    ("Run script natural", "go ahead and execute the cleanup script"),
+
+    # --- SELF CORRECTION / CHANGE OF MIND ---
+    ("Correction simple", "open Chrome wait no Notion"),
+    ("Correction with params", "open chrome on monitor two with YouTube no wait monitor three with Netflix"),
+    ("Correction same action diff target", "close Chrome no wait minimize it"),
+    ("Correction volume", "turn the volume down wait no turn it up"),
+    ("Correction system action", "restart my computer wait no lock it"),
+    ("Correction cancelled no replacement", "shut down actually don't"),
+    ("Correction with I mean", "set volume to 50 I mean 70"),
+    ("Correction with sorry", "open Outlook sorry I meant Gmail"),
+
+    # --- COMPOUND COMMANDS ---
+    ("Compound open+minimize", "open Chrome and then minimize it"),
+    ("Compound open+project", "open Chrome on my second monitor with YouTube and then start hand tracking"),
+    ("Compound three actions", "open Notion and mute the volume and then lock my computer"),
+    ("Compound vs correction lookalike", "open Chrome and open Notion"),
+
+    # --- ALIASES ---
+    ("Create alias basic", "make an alias called school for Chrome Outlook and OneNote"),
+    ("Create alias natural", "can you set up a shortcut named work that opens Slack and Gmail"),
+    ("Run alias known", "let's get microsoft running"),
+    ("Run alias phrase 2", "start my school alias"),
+    ("Run alias phrase 3", "run my habits shortcut"),
+    ("Stop alias natural", "let's get rid of school"),
+    ("Stop alias explicit", "close school"),
+    ("Stop alias with word alias", "close my school alias"),
+    ("Delete alias explicit", "delete the school alias"),
+    ("Delete alias remove", "remove alias school"),
+    ("Stop vs delete disambiguation", "shut down school"),
+    ("List aliases", "what aliases do I have"),
+    ("Delete all aliases", "clear all my aliases"),
+
+    # --- WEBSITE VS APP DISAMBIGUATION ---
+    ("Website only", "open chrome with youtube and netflix"),
+    ("App mixed with website", "open chrome with youtube and notion"),
+    ("Multiple known apps after with", "open chrome with notion and outlook"),
+    ("Monitor scoping single app", "open chrome with youtube and notion on monitor 2"),
+    ("Monitor scoping both apps", "open chrome and notion on monitor 2"),
+
+    # --- HISTORY / REPEAT / PRONOUN ---
+    ("History open again", "open it again"),
+    ("History run again", "run it again"),
+    ("History snap pronoun", "shift it to the left"),
+    ("History move monitor pronoun", "move it to monitor 2"),
+    ("History focus pronoun", "focus it"),
+    ("History with extra params", "open it again with youtube and netflix"),
+    ("History no verb repeat", "do that again"),
+    ("History no verb same thing", "same thing again"),
+    ("History filler verb", "repeat that again"),
+    ("Fresh target overrides history", "open it again but actually open Spotify instead"),
+
+    # --- WINDOW MANAGEMENT ---
+    ("Snap left", "snap Chrome to the left"),
+    ("Snap right natural", "put Notion on the right side of the screen"),
+    ("Maximize", "full screen Spotify"),
+    ("Minimize natural", "get Chrome out of my way"),
+    ("Move to monitor", "move Notion to the third monitor"),
+    ("Focus window", "switch to Chrome"),
+
+    # --- VOLUME / BRIGHTNESS ---
+    ("Volume up", "turn the volume up"),
+    ("Volume down natural", "it's too loud, lower it"),
+    ("Mute", "mute the volume"),
+    ("Unmute", "unmute it"),
+    ("Set volume numeric", "set the volume to 40"),
+    ("Brightness up", "make the screen brighter"),
+    ("Brightness down natural", "it's too bright in here"),
+    ("Set brightness numeric", "set brightness to 80"),
+    ("Brightness no number given", "turn up the brightness"),
+
+    # --- CLIPBOARD ---
+    ("Get clipboard", "what's on my clipboard"),
+    ("Clear clipboard", "clear my clipboard"),
+    ("Set clipboard basic", "could you copy hello my name is jivitesh to my clipboard"),
+    ("Set clipboard link", "copy link https monkey.com"),
+    ("Set clipboard long phrase", "set clipboard to remember to call mom at 5pm tomorrow"),
+
+    # --- SYSTEM ---
+    ("Lock system", "lock my computer"),
+    ("Sleep system", "put the computer to sleep"),
+    ("Restart system", "restart my pc"),
+    ("Shutdown system", "shut down the computer"),
+    ("List processes", "what's currently running"),
+    ("List monitors", "how many monitors do I have"),
+    ("Show history", "show me my history"),
+    ("Delete history", "clear my history"),
+
+    # --- SEARCH / WEB KNOWLEDGE ---
+    ("Search weather", "whats the weather like today"),
+    ("Search cost", "how much does a tesla model 3 cost"),
+    ("Search who is", "who is the ceo of openai"),
+    ("Search what is", "what is the capital of mongolia"),
+    ("Search vs system action lookalike", "how do I lock my computer"),
+
+    # --- STT NOISE / MISHEARS ---
+    ("Mishear to/too", "open chrome and go too notion"),
+    ("Mishear for/four", "set volume for 40"),
+    ("Mishear won/one", "move it won monitor over"),
+    ("Filler heavy", "um so like could you uh open Chrome for me okay"),
+    ("No punctuation run-on", "open chrome and then close spotify and then lock my computer"),
+
+    # --- EDGE CASES / AMBIGUITY ---
+    ("Ambiguous pronoun no history context", "close it"),
+    ("Action with no target given", "open"),
+    ("Non-canonical verb only", "do that"),
+    ("Empty-ish filler only", "um yeah okay so"),
+    ("Correction across compound", "open chrome and notion wait no just chrome"),
 ]
 
 

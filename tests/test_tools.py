@@ -6,34 +6,18 @@ WAIT_TIME = 20
 TESTS = {
     "Test 1":
     {
-        "action": "search",
+        "action": "mcp",
         "target": None,
         "parameters": {
-            "query": "Whats the weather in Toronto, ON?"
+            "check": "Can you start a draft to myself, titled Latest Resume"
         }
     },
     "Test 2":
-    {
-        "action": "search",
-        "target": None,
-        "parameters": {
-            "query": "What is the weather in London, ON?"
-        }
-    },
-    "Test 3":
-    {
-        "action": "search",
-        "target": None,
-        "parameters": {
-            "query": "Whats the weather?"
-        }
-    },
-    "Test 4":
      {
-         "action": "search",
-         "target": None,
-         "parameters": {
-             "query": "Whats in the news today?"
+        "action": "mcp",
+        "target": None,
+        "parameters": {
+             "check": "Draft an email to Cole regarding course selection and how we need to pick them soon"
          }
      }
 }

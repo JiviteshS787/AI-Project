@@ -13,8 +13,10 @@ from assistant.brain.web_search_handler import classify_query
 from assistant.external_connectors.news_handler import handle_news
 from assistant.external_connectors.weather_handler import handle_weather
 
+from assistant.mcp.mcp_handler import handle_mcp_query
 
-def execute(function): #function is a JSON obj, action and target are the attributes of said obj
+
+def execute(function, skip_confirm=False): #function is a JSON obj, action and target are the attributes of said obj
     '''
     What to use to complete the given function
     '''
@@ -164,12 +166,13 @@ def execute(function): #function is a JSON obj, action and target are the attrib
     #           Power Control             #
     #######################################
     elif action in ["sleep_system", "lock_system", "restart_system", "shutdown_system"]:
-        print(f"\n⚠️ Confirm power action: {action.replace('_', ' ')}")
-        confirm = input("Type 'yes' to confirm: ").lower().strip()
+        if not skip_confirm:
+            print(f"\n⚠️ Confirm power action: {action.replace('_', ' ')}")
+            confirm = input("Type 'yes' to confirm: ").lower().strip()
 
-        if confirm != "yes":
-            print("Cancelled.")
-            return
+            if confirm != "yes":
+                print("Cancelled.")
+                return
 
         append_history(function)
 
@@ -184,7 +187,7 @@ def execute(function): #function is a JSON obj, action and target are the attrib
 
 
     #######################################
-    #           Power Control             #
+    #         Clipboard Control           #
     #######################################
     elif action == "get_clipboard":
         get_clipboard()

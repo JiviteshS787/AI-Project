@@ -229,3 +229,9 @@ validate_command_check.py
 data/credentials.json
 data/google_token.json
 data/outlook_token_personal.json
+data/gmail_mcp_token.json
+
+assistant/mcp
+
+migrate_tokens.py
+migrate_history.py

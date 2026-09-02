@@ -143,8 +143,12 @@ class UsageTracker:
         return modified
 
 
-    def _model_bucket(self, model: str) -> dict:
-        bucket = self._data.setdefault(model, {})
+    def _bucket_key(self, model: str, key_id: str) -> str:
+        return f"{model}::{key_id}"
+
+
+    def _model_bucket(self, model: str, key_id: str) -> dict:
+        bucket = self._data.setdefault(self._bucket_key(model, key_id), {})
         '''
         if bucket.get("date") != _today():
             bucket["date"] = _today()
@@ -168,8 +172,8 @@ class UsageTracker:
         return bucket
 
 
-    def record(self, model: str, headers: dict | None, prompt_tokens: int, completion_tokens: int):
-        bucket = self._model_bucket(model)
+    def record(self, model: str, key_id: str, headers: dict | None, prompt_tokens: int, completion_tokens: int):
+        bucket = self._model_bucket(model, key_id)
         self.reset_if_needed()
 
         total_tokens = prompt_tokens + completion_tokens
@@ -205,8 +209,8 @@ class UsageTracker:
         self._save()
 
 
-    def snapshot(self, model: str) -> dict:
-        bucket = self._model_bucket(model)
+    def snapshot(self, model: str, key_id: str) -> dict:
+        bucket = self._model_bucket(model, key_id)
         limits = DEFAULT_LIMITS.get(model, {"rpm": 30, "rpd": None, "tpm": None, "tpd": None})
         live = bucket.get("live", {})
         captured_at = bucket.get("live_captured_at")

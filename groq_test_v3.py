@@ -24,6 +24,7 @@ from dashboard_api.push_updates import push_state_update
 from faster_whisper import WhisperModel
 
 from assistant.brain.brain_groq_json import apps, files, projects, scripts, aliases
+from assistant.monitor.usage_tracker import KEY_NAME
 
 
 
