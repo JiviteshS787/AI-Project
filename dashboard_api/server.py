@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Body
 from fastapi import Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, HTMLResponse
 
 from datetime import datetime
 
@@ -12,6 +12,8 @@ import asyncio
 
 from pydantic import BaseModel
 from typing import Optional
+
+from markupsafe import escape
 
 from assistant.state import state
 
@@ -204,8 +206,13 @@ def get_logs():
     return {"status": logs}
 
 
-@app.get("/status", response_class=PlainTextResponse)
-def get_status(x_remote_secret: str = Header(None)):
+
+
+#######################################
+#            Status View              #
+#######################################
+@app.get("/status/data")
+def get_status_data(x_remote_secret: str = Header(None)):
     if x_remote_secret != REMOTE_SECRET:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -213,19 +220,267 @@ def get_status(x_remote_secret: str = Header(None)):
     hours, remainder = divmod(uptime_seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    return f"🟢 Laptop Online\nUptime: {hours:02}:{minutes:02}:{seconds:02}"
+    return {"uptime": f"{hours:02}:{minutes:02}:{seconds:02}"}
 
 
+@app.get("/status/view", response_class=HTMLResponse)
+def status_view(secret: str = ""):
+    if secret != REMOTE_SECRET:
+        return HTMLResponse("<h1>Unauthorized</h1>", status_code=401)
+
+    return f"""
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Laptop Status</title>
+        <style>
+            body {{
+                background: #0d0d0d;
+                color: #e0e0e0;
+                font-family: -apple-system, sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+            }}
+            .dot {{
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: #2ecc71;
+                margin-bottom: 20px;
+                box-shadow: 0 0 12px #2ecc71;
+            }}
+            h1 {{ font-weight: 300; letter-spacing: 1px; margin: 0 0 10px; }}
+            #uptime {{ font-size: 48px; font-weight: 200; letter-spacing: 2px; }}
+        </style>
+    </head>
+    <body>
+        <div class="dot"></div>
+        <h1>Laptop Online</h1>
+        <div id="uptime">--:--:--</div>
+
+        <script>
+            const secret = "{secret}";
+            async function updateUptime() {{
+                try {{
+                    const res = await fetch("/status/data", {{
+                        headers: {{ "X-Remote-Secret": secret }}
+                    }});
+                    const data = await res.json();
+                    document.getElementById("uptime").textContent = data.uptime;
+                }} catch (e) {{
+                    document.getElementById("uptime").textContent = "offline";
+                }}
+            }}
+            updateUptime();
+            setInterval(updateUptime, 1000);
+        </script>
+    </body>
+    </html>
+    """
+
+
+#######################################
+#           Briefing View             #
+#######################################
 @app.get("/briefing", response_class=PlainTextResponse)
 def get_briefing(x_remote_secret: str = Header(None)):
     if x_remote_secret != REMOTE_SECRET:
-        raise HTTPException(status_code=401, detail="Unauthorized") 
+        raise HTTPException(status_code=401, detail="Unauthorized")
     try:
         summary = generate_briefing()
         return summary
     except Exception as e:
         return f"Briefing generation failed: {e}"
 
+
+@app.get("/briefing/view", response_class=HTMLResponse)
+def briefing_view(secret: str = ""):
+    if secret != REMOTE_SECRET:
+        return HTMLResponse("<h1>Unauthorized</h1>", status_code=401)
+
+    try:
+        summary_markdown = generate_briefing()
+    except Exception as e:
+        summary_markdown = f"Briefing generation failed: {e}"
+
+    safe_json = json.dumps(summary_markdown)
+
+    return f"""
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Daily Briefing</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.2/marked.min.js"></script>
+        <style>
+            * {{ box-sizing: border-box; }}
+
+            body {{
+                background: #0a0a0c;
+                color: #e8e8ea;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                margin: 0;
+                padding: 0;
+                -webkit-font-smoothing: antialiased;
+            }}
+
+            .header {{
+                position: sticky;
+                top: 0;
+                background: linear-gradient(180deg, #0a0a0c 80%, transparent);
+                padding: 24px 20px 16px;
+                z-index: 10;
+            }}
+
+            .header .date {{
+                color: #7a7a82;
+                font-size: 13px;
+                text-transform: uppercase;
+                letter-spacing: 1.2px;
+                margin-bottom: 4px;
+            }}
+
+            .header h1 {{
+                font-size: 26px;
+                font-weight: 650;
+                margin: 0;
+                letter-spacing: -0.4px;
+            }}
+
+            #content {{
+                padding: 4px 16px 60px;
+            }}
+
+            /* Card wrapper for each section */
+            #content h2, #content h3 {{
+                font-size: 15px;
+                font-weight: 650;
+                text-transform: uppercase;
+                letter-spacing: 0.6px;
+                color: #9a9aa5;
+                margin: 28px 4px 10px;
+            }}
+
+            #content h2:first-child {{ margin-top: 4px; }}
+
+            /* Turn tables into stacked cards instead of horizontal tables */
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+                display: block;
+            }}
+
+            thead {{ display: none; }}
+
+            table, tbody, tr {{ display: block; width: 100%; }}
+
+            tr {{
+                background: #16161a;
+                border-radius: 14px;
+                margin-bottom: 10px;
+                padding: 14px 16px;
+                border: 1px solid #232328;
+            }}
+
+            td {{
+                display: block;
+                padding: 2px 0;
+                border: none;
+            }}
+
+            td:first-child {{
+                font-size: 12px;
+                color: #7a7a82;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+                margin-bottom: 2px;
+            }}
+
+            td:last-child {{
+                font-size: 15px;
+                color: #e8e8ea;
+                line-height: 1.4;
+            }}
+
+            p {{
+                font-size: 15px;
+                line-height: 1.6;
+                color: #d0d0d5;
+                margin: 8px 4px 16px;
+            }}
+
+            ul, ol {{
+                margin: 8px 4px 16px;
+                padding-left: 20px;
+            }}
+
+            li {{
+                font-size: 15px;
+                line-height: 1.7;
+                color: #d0d0d5;
+                margin-bottom: 6px;
+            }}
+
+            strong {{ color: #fff; font-weight: 650; }}
+
+            a {{ color: #5aa9ff; text-decoration: none; }}
+
+            hr {{
+                border: none;
+                border-top: 1px solid #1e1e22;
+                margin: 8px 4px 8px;
+            }}
+
+            .loading {{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 80px 20px;
+                color: #6a6a72;
+                font-size: 14px;
+            }}
+
+            .spinner {{
+                width: 24px;
+                height: 24px;
+                border: 2.5px solid #232328;
+                border-top-color: #5aa9ff;
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+                margin-bottom: 14px;
+            }}
+
+            @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <div class="date" id="today"></div>
+            <h1>Daily Briefing</h1>
+        </div>
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                Loading your briefing...
+            </div>
+        </div>
+
+        <script>
+            document.getElementById("today").textContent = new Date().toLocaleDateString('en-US', {{
+                weekday: 'long', month: 'long', day: 'numeric'
+            }});
+
+            const raw = {safe_json};
+            document.getElementById("content").innerHTML = marked.parse(raw);
+        </script>
+    </body>
+    </html>
+    """
 
 
 @app.get("/stats")
