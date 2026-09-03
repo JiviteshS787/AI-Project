@@ -17,7 +17,7 @@ from assistant.alias_manager import load_aliases
 # ============================================================
 
 MODEL = "openai/gpt-oss-20b"
-KEY_NAME = 'GROQ_API_KEY'
+KEY_NAME = 'GROQ_API_KEY_2'
 
 client = Groq(api_key=os.environ.get(KEY_NAME))
 tracker = UsageTracker()
@@ -352,8 +352,12 @@ brighter/darker -> brightness_up/brightness_down
 set brightness to N -> set_brightness {"level":N} (only if number given)
 clipboard read/check -> get_clipboard | clear -> clear_clipboard
 lock/sleep/restart/shutdown computer -> lock_system/sleep_system/restart_system/shutdown_system
-list processes/monitors -> list_running_processes/list_monitors
 show/clear history -> show_history/delete_history
+list processes/monitors -> list_running_processes/list_monitors
+  Includes question phrasing referring to the system itself, not outside knowledge:
+  "how many monitors do I have" -> {"commands":[{"action":"list_monitors","target":null,"parameters":{}}]}
+  "what's running right now" -> {"commands":[{"action":"list_running_processes","target":null,"parameters":{}}]}
+  Distinguish from SEARCH: if the question is about the system/device itself (monitors, processes, clipboard, history), it's a canonical action, not search. SEARCH is only for outside/real-world knowledge (weather, news, facts, people, prices).
 
 ALIASES:
 create alias X for A,B,C -> create_alias target=X {"alias_for":["A","B","C"]}. Name after "called/named" -> target. Every app after "for" (including the first) -> alias_for. Never put an app name in target for create_alias.
@@ -370,8 +374,10 @@ WEB SEARCH: any question needing outside/real-world knowledge, not a system comm
   "how much does a tesla model 3 cost" -> {"commands":[{"action":"search","target":null,"parameters":{"query":"how much does a tesla model 3 cost"}}]}
   If it doesn't match any INTENT MAP pattern and is phrased as a question, it's a search.
 
-TARGET: literal object acted on. Strip filler anywhere: can you/could you/please/my/the/that/for me/project/script. Never use "it"/"that" as target.
+TARGET: literal object acted on. Strip filler anywhere: can you/could you/please/my/the/that/for me/project/script. Never use "it"/"that" as target. Even if the target is not a recognized app/alias/script name, still output it literally as the target — do NOT fall back to "none" just because you don't recognize the word.
   "boot up the hand tracking project" -> target="hand tracking"
+  "run my backup script" -> target="backup"
+  "quit Spotify" -> {"commands":[{"action":"close","target":"spotify","parameters":{}}]}
 
 NO-TARGET ACTIONS (target always null): volume_up, volume_down, mute_volume, unmute_volume, set_volume, brightness_up, brightness_down, set_brightness, get_clipboard, set_clipboard, clear_clipboard, list_aliases, delete_all_aliases, list_running_processes, list_monitors, show_history, delete_history, sleep_system, lock_system, restart_system, shutdown_system, search, again, none
 
@@ -392,13 +398,14 @@ WEBSITE VS APP (words after "with"): check each word against context.targets.app
   "open chrome and notion on monitor 2" ->
     {"commands":[{"action":"open","target":"chrome","parameters":{"monitor":2}},{"action":"open","target":"notion","parameters":{"monitor":2}}]}
 
-HISTORY/REPEAT: triggered when the speaker uses a pronoun ("it"/"that"/"this") instead of naming a target, OR says "again"/"same thing"/"once more", with no fresh target named. Always: target=null, "history":true, plus any other mentioned params. Always ONE command.
+HISTORY/REPEAT: triggered when the speaker uses a pronoun ("it"/"that"/"this") instead of naming a target, OR says "again"/"same thing"/"once more", with no fresh target named. Always: target=null, "history":true, plus any other mentioned params. Always ONE command. This rule applies even when the sentence also contains STT mishears (to/too, for/four, won/one) — normalize the mishear AND still apply history:true if a pronoun is present. Do not let a mishear distract you from the pronoun.
   "open it again" -> {"commands":[{"action":"open","target":null,"parameters":{"history":true}}]}
   "run it again" -> {"commands":[{"action":"run_script","target":null,"parameters":{"history":true}}]}
   ("run" is a real action verb — map it normally, don't treat as "again" just because the word appears)
   "shift it to the left" -> {"commands":[{"action":"snap_window","target":null,"parameters":{"history":true,"direction":"left"}}]}
   "open it again with youtube and netflix" ->
     {"commands":[{"action":"open","target":null,"parameters":{"history":true,"websites":["youtube","netflix"]}}]}
+  "move it won monitor over" -> {"commands":[{"action":"move_window_to_monitor","target":null,"parameters":{"history":true,"monitor":1}}]}
   No verb at all, or a non-canonical filler-verb ("repeat", "do that") -> action="again":
     "do that again" -> {"commands":[{"action":"again","target":null,"parameters":{"history":true}}]}
   New/different target named -> NOT history, treat as fresh command.

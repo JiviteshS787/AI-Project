@@ -36,6 +36,8 @@ function App() {
   const chatAutoScrollRef = useRef(true);
   const historyAutoScrollRef = useRef(true);
 
+  const MODEL = "openai/gpt-oss-20b";
+
   const messageLimit = 20
 
   const isNearBottom = (el, threshold = 80) => {

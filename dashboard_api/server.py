@@ -1,7 +1,10 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Body
+from fastapi import Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
+
 from datetime import datetime
 
 import json, os, time
@@ -20,7 +23,11 @@ from assistant.history import load_history, daily_summary, weekly_summary
 from assistant.router import execute
 from dashboard_api.push_updates import push_state_update
 
+from assistant.external_clients.daily_briefing import generate_briefing
+
 from assistant.brain.brain_groq_json import KEY_NAME
+
+SERVER_START_TIME = time.time()
 
 
 REMOTE_ALLOWED_ACTIONS = {
@@ -28,6 +35,7 @@ REMOTE_ALLOWED_ACTIONS = {
     "restart_system",
     "sleep_system",
     "lock_system",
+    "set_clipboard"
 }
 
 API_KEY_NAMES = ["GROQ_API_KEY", "GROQ_API_KEY_2"]
@@ -196,6 +204,30 @@ def get_logs():
     return {"status": logs}
 
 
+@app.get("/status", response_class=PlainTextResponse)
+def get_status(x_remote_secret: str = Header(None)):
+    if x_remote_secret != REMOTE_SECRET:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    uptime_seconds = int(time.time() - SERVER_START_TIME)
+    hours, remainder = divmod(uptime_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    return f"🟢 Laptop Online\nUptime: {hours:02}:{minutes:02}:{seconds:02}"
+
+
+@app.get("/briefing", response_class=PlainTextResponse)
+def get_briefing(x_remote_secret: str = Header(None)):
+    if x_remote_secret != REMOTE_SECRET:
+        raise HTTPException(status_code=401, detail="Unauthorized") 
+    try:
+        summary = generate_briefing()
+        return summary
+    except Exception as e:
+        return f"Briefing generation failed: {e}"
+
+
+
 @app.get("/stats")
 def get_stats():
     return state["stats"]
@@ -231,6 +263,7 @@ async def receive_event(event: Event):
 
     elif event.type == "weekly_stats":
         model = event.data.get("model")
+        key_id = event.data.get("key_id")
         weekly_stats = event.data.get("weekly_stats")
         if model and weekly_stats is not None:
             state["weekly_stats"].setdefault(model, {})[key_id] = weekly_stats
@@ -283,7 +316,14 @@ async def remote_command(payload: dict = Body(...)):
     if action not in REMOTE_ALLOWED_ACTIONS:
         return {"status": "rejected", "reason": f"'{action}' not allowed remotely"}
 
-    function = {"action": action, "target": None, "parameters": None}
+    function = {
+        "action": action,
+        "target": payload.get("target"),
+        "parameters": payload.get("parameters") or {},
+    }
+
+    print(f"{function}")
+
     push_state_update("last_input", {"last_input": f"[Remote] {action.replace('_', ' ')}"})
     time.sleep(0.4)
     push_state_update("last_interpretation", {"last_interpretation": function})
