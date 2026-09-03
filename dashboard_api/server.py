@@ -319,7 +319,7 @@ def briefing_view(secret: str = ""):
             * {{ box-sizing: border-box; }}
 
             body {{
-                background: #0a0a0c;
+                background: #0a1a1f;
                 color: #e8e8ea;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                 margin: 0;
@@ -330,13 +330,13 @@ def briefing_view(secret: str = ""):
             .header {{
                 position: sticky;
                 top: 0;
-                background: linear-gradient(180deg, #0a0a0c 80%, transparent);
+                background: linear-gradient(180deg, #0a1a1f 80%, transparent);
                 padding: 24px 20px 16px;
                 z-index: 10;
             }}
 
             .header .date {{
-                color: #7a7a82;
+                color: #4a9a9e;
                 font-size: 13px;
                 text-transform: uppercase;
                 letter-spacing: 1.2px;
@@ -354,19 +354,17 @@ def briefing_view(secret: str = ""):
                 padding: 4px 16px 60px;
             }}
 
-            /* Card wrapper for each section */
             #content h2, #content h3 {{
                 font-size: 15px;
                 font-weight: 650;
                 text-transform: uppercase;
                 letter-spacing: 0.6px;
-                color: #9a9aa5;
+                color: #3d8f94;
                 margin: 28px 4px 10px;
             }}
 
             #content h2:first-child {{ margin-top: 4px; }}
 
-            /* Turn tables into stacked cards instead of horizontal tables */
             table {{
                 width: 100%;
                 border-collapse: collapse;
@@ -378,11 +376,11 @@ def briefing_view(secret: str = ""):
             table, tbody, tr {{ display: block; width: 100%; }}
 
             tr {{
-                background: #16161a;
+                background: #0e2329;
                 border-radius: 14px;
                 margin-bottom: 10px;
                 padding: 14px 16px;
-                border: 1px solid #232328;
+                border: 1px solid #1a3a42;
             }}
 
             td {{
@@ -393,7 +391,7 @@ def briefing_view(secret: str = ""):
 
             td:first-child {{
                 font-size: 12px;
-                color: #7a7a82;
+                color: #4a9a9e;
                 font-weight: 600;
                 text-transform: uppercase;
                 letter-spacing: 0.4px;
@@ -409,7 +407,7 @@ def briefing_view(secret: str = ""):
             p {{
                 font-size: 15px;
                 line-height: 1.6;
-                color: #d0d0d5;
+                color: #c8d8da;
                 margin: 8px 4px 16px;
             }}
 
@@ -421,17 +419,17 @@ def briefing_view(secret: str = ""):
             li {{
                 font-size: 15px;
                 line-height: 1.7;
-                color: #d0d0d5;
+                color: #c8d8da;
                 margin-bottom: 6px;
             }}
 
             strong {{ color: #fff; font-weight: 650; }}
 
-            a {{ color: #5aa9ff; text-decoration: none; }}
+            a {{ color: #2ec4c4; text-decoration: none; }}
 
             hr {{
                 border: none;
-                border-top: 1px solid #1e1e22;
+                border-top: 1px solid #1a3a42;
                 margin: 8px 4px 8px;
             }}
 
@@ -441,15 +439,15 @@ def briefing_view(secret: str = ""):
                 align-items: center;
                 justify-content: center;
                 padding: 80px 20px;
-                color: #6a6a72;
+                color: #4a9a9e;
                 font-size: 14px;
             }}
 
             .spinner {{
                 width: 24px;
                 height: 24px;
-                border: 2.5px solid #232328;
-                border-top-color: #5aa9ff;
+                border: 2.5px solid #1a3a42;
+                border-top-color: #2ec4c4;
                 border-radius: 50%;
                 animation: spin 0.8s linear infinite;
                 margin-bottom: 14px;
@@ -481,6 +479,8 @@ def briefing_view(secret: str = ""):
     </body>
     </html>
     """
+
+
 
 
 @app.get("/stats")
@@ -577,11 +577,18 @@ async def remote_command(payload: dict = Body(...)):
         "parameters": payload.get("parameters") or {},
     }
 
-    print(f"{function}")
+    #print(f"{function}")
 
     push_state_update("last_input", {"last_input": f"[Remote] {action.replace('_', ' ')}"})
     time.sleep(0.4)
     push_state_update("last_interpretation", {"last_interpretation": function})
+    time.sleep(1)
     execute(function, skip_confirm=True)
 
     return {"status": "ok", "action": action}
+
+'''
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("dashboard_api.server:app", host="0.0.0.0", port=8000, reload=True)
+'''
