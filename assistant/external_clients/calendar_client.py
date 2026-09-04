@@ -43,7 +43,14 @@ def fetch_todays_events():
 
     parsed_events = []
     for event in events:
+        is_all_day = "date" in event["start"] and "dateTime" not in event["start"]
         start = event["start"].get("dateTime", event["start"].get("date"))
+
+        if not is_all_day:
+            start_dt = datetime.fromisoformat(start)
+            if start_dt < now_local:
+                continue
+
         parsed_events.append({
             "id": event["id"],
             "summary": event.get("summary", "(No title)"),

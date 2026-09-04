@@ -5,6 +5,9 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/calendar.readonly"
@@ -34,17 +37,25 @@ def get_gmail_service():
     return service
 
 
-def fetch_recent_emails(read="unread", category="primary",max_results=20):
+def fetch_recent_emails(read="unread", category="primary", where = "inbox", max_results=10):
     service = get_gmail_service()
+
+    toronto_tz = ZoneInfo("America/Toronto")
+    now_local = datetime.now(toronto_tz)
+    start_of_week_local = (now_local - timedelta(days=now_local.weekday())).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    after_str = start_of_week_local.strftime("%Y/%m/%d")
 
     category_tab = f"category:{category.lower()}"
     filter_read = f"is:{read.lower()}"
+    tab = f"in:{where.lower()}"
 
     results = service.users().messages().list(
         userId="me",
         maxResults=max_results,
         labelIds=["INBOX"],
-        q=f"newer_than:7d {category_tab} {filter_read}"
+        q=f"after:{after_str} {category_tab} {tab} {filter_read}"
     ).execute()
 
     message_refs = results.get("messages", [])

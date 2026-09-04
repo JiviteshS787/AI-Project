@@ -9,6 +9,8 @@ from datetime import datetime
 
 import json, os, time
 import asyncio
+import unicodedata
+
 
 from pydantic import BaseModel
 from typing import Optional
@@ -193,6 +195,11 @@ def get_daily_summary():
     return daily_summary()
 
 
+def _normalize_markdown(text):
+    text = text.replace("\u2011", "-")  # non-breaking hyphen
+    text = text.replace("\u2013", "-")  # en dash
+    text = text.replace("\u2014", "--")  # em dash
+    return text
 
 ########## Endpoints ##########
 
@@ -307,7 +314,8 @@ def briefing_view(secret: str = ""):
     except Exception as e:
         summary_markdown = f"Briefing generation failed: {e}"
 
-    safe_json = json.dumps(summary_markdown)
+    summary_markdown = _normalize_markdown(summary_markdown)
+    safe_json = json.dumps(summary_markdown)   
 
     return f"""
     <html>
@@ -396,12 +404,16 @@ def briefing_view(secret: str = ""):
                 text-transform: uppercase;
                 letter-spacing: 0.4px;
                 margin-bottom: 2px;
+                overflow-wrap: anywhere;
+                word-break: break-word;
             }}
 
             td:last-child {{
                 font-size: 15px;
                 color: #e8e8ea;
                 line-height: 1.4;
+                overflow-wrap: anywhere;
+                word-break: break-word;
             }}
 
             p {{
@@ -479,7 +491,6 @@ def briefing_view(secret: str = ""):
     </body>
     </html>
     """
-
 
 
 
@@ -587,8 +598,8 @@ async def remote_command(payload: dict = Body(...)):
 
     return {"status": "ok", "action": action}
 
-'''
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("dashboard_api.server:app", host="0.0.0.0", port=8000, reload=True)
-'''
+

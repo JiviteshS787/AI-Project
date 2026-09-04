@@ -50,7 +50,7 @@ def get_outlook_token(account_label):
     return result["access_token"]
 
 
-def fetch_recent_emails(account_label, max_results=20):
+def fetch_recent_emails(account_label, max_results=10):
     token = get_outlook_token(account_label)
     headers = {"Authorization": f"Bearer {token}"}
 
@@ -65,7 +65,7 @@ def fetch_recent_emails(account_label, max_results=20):
     url = (
         "https://graph.microsoft.com/v1.0/me/messages"
         f"?$top={max_results}"
-        f"&$filter=isRead eq false and receivedDateTime ge {start_of_week_str}"
+        f"&$filter=receivedDateTime ge {start_of_week_str} and isRead eq false"
         "&$select=subject,from,receivedDateTime,bodyPreview,isRead"
         "&$orderby=receivedDateTime desc"
     )

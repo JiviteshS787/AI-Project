@@ -1,7 +1,7 @@
 from groq import Groq
 import os, json
 
-client = Groq(api_key=os.environ["GROQ_API_KEY"])
+client = Groq(api_key=os.environ["GROQ_API_KEY_2"])
 
 
 SEARCH_ROUTER_PROMPT = """

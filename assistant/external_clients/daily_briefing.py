@@ -125,21 +125,49 @@ def build_prompt(data):
     gmail_block = format_gmail(data["gmail"]) or "(none)"
     outlook_block = format_outlook(data["outlook"]) or "(none)"
 
-    return f"""You are summarizing today's schedule and inbox for a daily briefing.
+    return f"""You are writing a daily briefing formatted as Markdown, to be rendered as styled cards using Markdown tables.
 
-CALENDAR EVENTS TODAY:
-{calendar_block}
+    CALENDAR EVENTS TODAY:
+    {calendar_block}
 
-GMAIL (unread, primary inbox):
-{gmail_block}
+    GMAIL (unread, primary inbox):
+    {gmail_block}
 
-OUTLOOK (unread, personal account):
-{outlook_block}
+    OUTLOOK (unread, personal account):
+    {outlook_block}
 
-Write a concise, well-organized daily briefing.
-Use your judgment on what's most important to surface first (e.g. urgent emails, upcoming events, anything time-sensitive).
-Keep it natural and readable, not a raw data dump. If a category is empty, skip mentioning it rather than saying "no events."
-"""
+    Write a well-organized daily briefing using your judgment on what's most important. Use this structure as a guide:
+
+    ## 📅 Today's Schedule (All Times Eastern – UTC-4)
+    A 2-column Markdown table:
+    | | |
+    |---|---|
+    | HH:MM | **Short action title** – one plain-text sentence description. |
+    Use "ALL-DAY" instead of a time for all-day items. Omit this section if calendar data is "(none)".
+
+    ## ✉️ Priority (Require Quick Attention)
+    Pull from BOTH Gmail and Outlook. Include only emails that are genuinely time-sensitive or need action — security alerts, deadlines, direct asks. Tag each row with its source. 2-column table:
+    | [Gmail/Outlook] Sender (Day DD Mon HH:MM timezone) | *"Subject line"* – why it matters or what to do. |
+    Omit this section entirely if nothing qualifies as priority — don't include an empty or placeholder row.
+
+    ## 💼 Job Search
+    Optional section. If either inbox has job application confirmations, recruiter emails, or job alert/posting emails, group them here as a 2-column Markdown table, tagged with source:
+    | [Gmail/Outlook] Sender (Day DD Mon HH:MM timezone) | *"Subject line"* – one short note. |
+    Omit this section if there's nothing job-related.
+
+    ## 📬 Other Notable Messages (Worth a Glance)
+    Everything else from Gmail and Outlook not already used above — promotions, newsletters, FYIs — as a bullet list, tagged with source, same format as Job Search. Omit if empty.
+
+    ## ✅ Quick Action Checklist
+    A numbered list distilling the actionable items above into concrete steps, in a sensible order. End with one short encouraging closing line.
+
+    FORMATTING RULES:
+    - Every table row is a single email or event — never merge multiple items into one row.
+    - Every email reference includes sender, timestamp, subject in italic quotes, and a plain-text note.
+    - Tag every email with its source account: [Gmail] or [Outlook].
+    - Do not invent information not present in the source data above.
+    - Skip any section with no relevant content — don't write "none" or include placeholder rows.
+    """
 
 
 def generate_briefing():
