@@ -1,7 +1,7 @@
 import time
 
 from assistant.brain.brain import validate_command
-from assistant.brain.brain_groq_json import interpret, MODEL, SYSTEM_PROMPT
+from assistant.brain.brain_deepseek import interpret, MODEL
 
 '''
 TESTS = [
@@ -108,7 +108,7 @@ TESTS = [
 ]
 '''
 
-'''
+
 TESTS = [
     # --- OPEN / CLOSE ---
     ("Open natural", "can you go ahead and bring Chrome up"),
@@ -229,45 +229,17 @@ TESTS = [
     ("Empty-ish filler only", "um yeah okay so"),
     ("Correction across compound", "open chrome and notion wait no just chrome"),
 ]
-'''
-
-TESTS = [
-    ("Correction cancelled no replacement", "shut down actually don't"),
-    ("Run alias known", "let's get microsoft running"),
-    ("Run alias phrase 2", "start my school alias"),
-    ("Run alias phrase 3", "run my habits shortcut"),
-    ("Stop alias natural", "let's get rid of school"),
-    ("Stop alias explicit", "close school"),
-    ("Stop alias with word alias", "close my school alias"),
-    ("List aliases", "what aliases do I have"),
-    ("History no verb repeat", "do that again"),
-    ("History no verb same thing", "same thing again"),
-    ("History filler verb", "repeat that again"),
-    ("Fresh target overrides history", "open it again but actually open Outlook instead"),
-    ("List monitors", "how many monitors do I have"),
-    ("Search weather", "whats the weather like today"),
-    ("Search cost", "how much does a tesla model 3 cost"),
-    ("Search who is", "who is the ceo of openai"),
-    ("Search what is", "what is the capital of mongolia"),
-    ("Mishear won/one", "move it won monitor over"),
-    ("No punctuation run-on", "open chrome and then close spotify and then lock my computer"),
-    ("Non-canonical verb only", "do that"),
-]
 
 
-WAIT_TIME = 35
+WAIT_TIME = 5
 
 
 def main():
-    #print(f"[prompt size] {len(SYSTEM_PROMPT)} chars")
-
     total = len(TESTS)
     passed = 0
     failed = 0
     total_time = 0
-    name = "GPT-OSS-20b"
-    if "llama" in MODEL:
-        name = "LLAMA-3.1-8b"
+    name = MODEL
 
     print("=" * 70)
     print(f"AI ASSISTANT — {name} — VALIDATION TEST")
