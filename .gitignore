@@ -237,3 +237,5 @@ migrate_tokens.py
 migrate_history.py
 
 deepseek_test_log.txt
+
+server_log.txt
