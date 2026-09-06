@@ -12,8 +12,8 @@ from assistant.brain.web_search_handler import classify_query
 
 from assistant.external_connectors.news_handler import handle_news
 from assistant.external_connectors.weather_handler import handle_weather
+from assistant.external_connectors.web_search import search
 
-from assistant.mcp.mcp_handler import handle_mcp_query
 
 
 def execute(function, skip_confirm=False): #function is a JSON obj, action and target are the attributes of said obj
@@ -221,12 +221,17 @@ def execute(function, skip_confirm=False): #function is a JSON obj, action and t
         answer = ""
 
         if sub_action == "weather":
+            print("Weather")
             answer = handle_weather(sub_params.get("location"))
+            print(answer)
         elif sub_action == "news":
+            print("News")
             answer = handle_news(sub_params.get("topic"))
-        else:  # general_search
-            print("Nothing for now.")
-
+            print(answer)
+        elif sub_action == "general_search":
+            print("Web search")
+            answer = search(routed)
+            print(answer)
         return answer
 
 

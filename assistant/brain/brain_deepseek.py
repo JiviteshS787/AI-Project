@@ -209,7 +209,7 @@ def interpret(user_input):
             ],
             temperature=0,
             response_format={"type": "json_object"},
-            max_tokens = 300,
+            max_tokens = 150,
             extra_body={"thinking": {"type": "disabled"}}
         )
 

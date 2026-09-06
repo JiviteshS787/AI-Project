@@ -16,7 +16,8 @@ from assistant.alias_manager import load_aliases
 
 from assistant.router import execute
 from assistant.confirmation import confirm_command, format_command
-from assistant.brain.brain_groq_json import interpret
+#from assistant.brain.brain_groq_json import interpret
+from assistant.brain.brain_deepseek import interpret
 
 from assistant.state import state
 from dashboard_api.push_updates import push_state_update
@@ -24,7 +25,7 @@ from dashboard_api.push_updates import push_state_update
 from faster_whisper import WhisperModel
 
 from assistant.brain.brain_groq_json import apps, files, projects, scripts, aliases
-from assistant.monitor.usage_tracker import KEY_NAME
+#from assistant.monitor.usage_tracker import KEY_NAME
 
 
 
@@ -242,6 +243,7 @@ def parse_input(input):
         all_commands = None
         valid_commands = []
         interpreted_commands = interpret(user_input)
+        print(f"Interpreted commands: {interpreted_commands}")
         temp_history = load_history().copy()
 
         if isinstance(interpreted_commands, dict) and "error" in interpreted_commands:
@@ -253,6 +255,11 @@ def parse_input(input):
             for command in all_commands:
                 parameters = command.get("parameters") or {}
 
+                if command.get("action") == "search" and parameters.get("query"):
+                    print("Append search command")
+                    valid_commands.append(command)
+                    continue
+
                 if not parameters.get("history", False):
                     event = convert_to_format(command)
                     temp_history.append(event)
@@ -261,6 +268,7 @@ def parse_input(input):
                     resolved = history_check(command, temp_history)
                     if resolved:
                         valid_commands.append(resolved)
+
                 elif validate_command(command):
                     valid_commands.append(command)
 

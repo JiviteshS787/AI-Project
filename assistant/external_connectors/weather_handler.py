@@ -3,6 +3,17 @@ import requests
 HOME_LAT = 43.85
 HOME_LON = -79.29  # Markham -> Default
 
+
+def get_location():
+    r = requests.get("http://ip-api.com/json/")
+    data = r.json()
+    return {
+        "Latitude": data["lat"], 
+        "Longitude": data["lon"], 
+        "City": data["city"]
+    }
+
+
 def geocode(location: str):
     r = requests.get("https://geocoding-api.open-meteo.com/v1/search", params={
         "name": location,
@@ -15,21 +26,25 @@ def geocode(location: str):
 
 
 def handle_weather(location: str | None) -> str:
-    if location:
+    if location and location.lower().strip() == "home":
+        lat, lon = HOME_LAT, HOME_LON
+        label = "Home"
+    elif location:
         coords = geocode(location)
         if not coords:
             return f"I couldn't find a location called {location}."
         lat, lon = coords
         label = location
     else:
-        lat, lon = HOME_LAT, HOME_LON
-        label = "your area"
+        loc = get_location()
+        lat, lon = loc["Latitude"], loc["Longitude"]
+        label = loc["City"]
 
     r = requests.get("https://api.open-meteo.com/v1/forecast", params={
         "latitude": lat,
         "longitude": lon,
-        "current": "temperature_2m,apparent_temperature,wind_speed_10m,precipitation",
-        "hourly": "temperature_2m,precipitation_probability",
+        "current": "temperature_2m,apparent_temperature,wind_speed_10m,precipitation,snowfall",
+        "hourly": "temperature_2m,precipitation_probability,snowfall",
         "forecast_days": 1,
         "timezone": "auto",
     })
@@ -40,11 +55,15 @@ def handle_weather(location: str | None) -> str:
     temp = current.get("temperature_2m")
     feels_like = current.get("apparent_temperature")
     wind = current.get("wind_speed_10m")
+    current_snow = current.get("snowfall", 0)
 
     if temp is None:
         return f"I couldn't get the weather for {label} right now."
 
     base = f"It's currently {temp}°C in {label}, feels like {feels_like}°C, with winds at {wind} km/h."
+
+    if current_snow and current_snow > 0:
+        base += f" It's snowing right now ({current_snow} cm/hr)."
 
     # Build a short-term nudge from the next few hours
     nudge = _build_nudge(hourly, current_temp=temp)
@@ -56,6 +75,7 @@ def _build_nudge(hourly: dict, current_temp: float) -> str:
     times = hourly.get("time", [])
     temps = hourly.get("temperature_2m", [])
     rain_chance = hourly.get("precipitation_probability", [])
+    snowfall = hourly.get("snowfall", [])
 
     if not times:
         return ""
@@ -71,11 +91,14 @@ def _build_nudge(hourly: dict, current_temp: float) -> str:
 
     lookahead = min(current_index + 4, len(times) - 1)
     upcoming_rain = max(rain_chance[current_index:lookahead + 1], default=0)
+    upcoming_snow = sum(snowfall[current_index:lookahead + 1]) if snowfall else 0
     upcoming_temp = temps[lookahead] if lookahead < len(temps) else current_temp
 
     messages = []
 
-    if upcoming_rain >= 50:
+    if upcoming_snow >= 1:
+        messages.append(f"Snow's expected in the next few hours (around {upcoming_snow:.1f} cm) — plan for slower roads if you're driving.")
+    elif upcoming_rain >= 50:
         messages.append("Rain's likely in the next few hours — head out now if you can, or bring an umbrella if you're going later.")
 
     temp_drop = current_temp - upcoming_temp

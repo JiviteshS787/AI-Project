@@ -4,16 +4,22 @@ from datetime import datetime
 from email.utils import parsedate_to_datetime
 from zoneinfo import ZoneInfo
 
-from groq import Groq
+#from groq import Groq
+
+from openai import OpenAI
 
 from assistant.external_clients.gmail_client import fetch_recent_emails as fetch_gmail_emails
 from assistant.external_clients.outlook_client import fetch_all_accounts as fetch_outlook_emails
 from assistant.external_clients.calendar_client import fetch_todays_events
 
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+#client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+#BRIEFING_MODEL = "openai/gpt-oss-120b"
 
-BRIEFING_MODEL = "openai/gpt-oss-120b"
+MODEL = "deepseek-v4-flash"
+KEY_NAME = 'DEEPSEEK_API_KEY'
+
+client = OpenAI(api_key=os.environ.get(KEY_NAME), base_url="https://api.deepseek.com")
 
 SNIPPET_MAX_CHARS = 120
 TORONTO_TZ = ZoneInfo("America/Toronto")
@@ -146,12 +152,16 @@ def build_prompt(data):
     Use "ALL-DAY" instead of a time for all-day items. Omit this section if calendar data is "(none)".
 
     ## ✉️ Priority (Require Quick Attention)
-    Pull from BOTH Gmail and Outlook. Include only emails that are genuinely time-sensitive or need action — security alerts, deadlines, direct asks. Tag each row with its source. 2-column table:
+    Pull from BOTH Gmail and Outlook. Include only emails that are genuinely time-sensitive or need action — security alerts, deadlines, direct asks. Tag each row with its source. 2-column table, ALWAYS include the header separator row exactly as shown:
+    | | |
+    |---|---|
     | [Gmail/Outlook] Sender (Day DD Mon HH:MM timezone) | *"Subject line"* – why it matters or what to do. |
     Omit this section entirely if nothing qualifies as priority — don't include an empty or placeholder row.
 
     ## 💼 Job Search
-    Optional section. If either inbox has job application confirmations, recruiter emails, or job alert/posting emails, group them here as a 2-column Markdown table, tagged with source:
+    Optional section. If either inbox has job application confirmations, recruiter emails, or job alert/posting emails, group them here as a 2-column Markdown table, tagged with source, ALWAYS include the header separator row exactly as shown:
+    | | |
+    |---|---|
     | [Gmail/Outlook] Sender (Day DD Mon HH:MM timezone) | *"Subject line"* – one short note. |
     Omit this section if there's nothing job-related.
 
@@ -174,10 +184,27 @@ def generate_briefing():
     data = gather_raw_data()
     prompt = build_prompt(data)
 
-    response = client.chat.completions.create(
-        model=BRIEFING_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    try:
+        response = client.chat.completions.create(
+            model=MODEL,
+            messages=[{"role": "user", "content": prompt}],
+            temperature = 0,
+            extra_body={"thinking": {"type": "disabled"}}
+        )
+
+        cache_hit = getattr(response.usage, "prompt_cache_hit_tokens", None)
+        cache_miss = getattr(response.usage, "prompt_cache_miss_tokens", None)
+
+        print(f"[tokens] prompt={response.usage.prompt_tokens} "
+            f"completion={response.usage.completion_tokens} "
+            f"total={response.usage.total_tokens} "
+            f"cache_hit={cache_hit} cache_miss={cache_miss}")
+        
+    except Exception as e:
+        return {
+            "error": "DeepSeek request failed",
+            "details": str(e)
+        }
 
     return response.choices[0].message.content
 

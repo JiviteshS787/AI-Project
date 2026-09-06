@@ -432,7 +432,7 @@ def briefing_view(secret: str = ""):
                 font-size: 15px;
                 line-height: 1.7;
                 color: #c8d8da;
-                margin-bottom: 6px;
+                margin-bottom: 14px;
             }}
 
             strong {{ color: #fff; font-weight: 650; }}

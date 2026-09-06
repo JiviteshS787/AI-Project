@@ -36,6 +36,11 @@ def format_command(command):
 
         return text
 
+    if action == "search":
+        query = parameters.get("query")
+        if query:
+            return f"{query.title()}"
+
     if action == "create_alias":
         alias_targets = parameters.get("alias_for", "")
         aliases = alias_targets[0].title()
