@@ -105,7 +105,9 @@ SAMPLE_RATE = 16000
 FRAME_DURATION_MS = 30
 FRAME_SIZE = int(SAMPLE_RATE * FRAME_DURATION_MS / 1000)
 SILENCE_LIMIT_FRAMES = 20
-VAD_AGGRESSIVENESS = 2
+VAD_AGGRESSIVENESS = 0
+#PREFERRED_MIC_NAMES = ["WH-1000XM5", "Jabra Elite 4 Active", "Buds FE"]
+PREFERRED_MIC_NAMES = ["Microphone Array (Intel"]
 
 WAKE_WORD = "assistant"
 
@@ -115,6 +117,53 @@ audio_q = queue.Queue()
 
 
 # ---------- audio capture ----------
+
+
+def find_input_device(name_substring, host_api_priority=("MME", "Windows DirectSound", "Windows WASAPI")):
+    """
+    Search connected input devices for one matching a name substring,
+    preferring the most compatible host APIs first.
+    """
+    devices = sd.query_devices()
+    hostapis = sd.query_hostapis()
+
+    candidates = []
+    for idx, dev in enumerate(devices):
+        if dev["max_input_channels"] > 0 and name_substring.lower() in dev["name"].lower():
+            api_name = hostapis[dev["hostapi"]]["name"]
+            candidates.append((idx, api_name))
+
+    for preferred_api in host_api_priority:
+        for idx, api_name in candidates:
+            if api_name == preferred_api:
+                return idx
+
+    return candidates[0][0] if candidates else None
+
+
+def get_preferred_input_device(preferred_names, fallback=None):
+    """
+    Try preferred headset names in priority order, verifying the device
+    actually opens before committing to it (handles stale/disconnected entries).
+    """
+    for name in preferred_names:
+        idx = find_input_device(name)
+        if idx is None:
+            continue
+        try:
+            # Quick open/close test to confirm it's really available
+            with sd.InputStream(device=idx, channels=1, samplerate=SAMPLE_RATE):
+                pass
+            print(f"🎧 Using input device [{idx}]: {sd.query_devices(idx)['name']}")
+            return idx
+        except Exception as e:
+            print(f"⚠️ {name} listed but not usable ({e}), trying next...")
+            continue
+
+    fallback_idx = fallback if fallback is not None else sd.default.device[0]
+    print(f"🎤 No preferred headset found, using default: {sd.query_devices(fallback_idx)['name']}")
+    return fallback_idx
+
 
 #Runs whenever a new audio chunk is ready -> automatic call
 def _callback(indata, frames, time_info, status):
@@ -236,7 +285,7 @@ def parse_input(input):
         print("\n")
         return
 
-    elif user_input == 'end':
+    elif user_input == 'terminate' or user_input == 'stop':
         return
 
     else:
@@ -452,11 +501,12 @@ def validate_command(command):
 
 
 # ---------- main loop ----------
-device_info = sd.query_devices(sd.default.device[0])
+device_index = get_preferred_input_device(PREFERRED_MIC_NAMES)
+device_info = sd.query_devices(device_index)
 print("Using mic:", device_info["name"])
 
 #Typing test
-while True:
+'''while True:
     user_input = input("You: ").strip().lower()
 
     if not user_input:
@@ -485,8 +535,8 @@ while True:
             break
 
         parse_input(command)
-
 '''
+
 while True:
     audio = listen_for_speech()
 
@@ -511,7 +561,7 @@ while True:
     push_state_update("last_input", {"last_input": command})
 
     if command:
-        if command.lower().strip().replace(".", "") == "end":
+        if command.lower().strip().replace(".", "") == "terminate" or command.lower().strip().replace(".", "") == "stop":
             state["last_interpretation"] = ["Session Ended"]
             
             push_state_update("last_interpretation", {"last_interpretation": ["Session Ended"]})
@@ -521,4 +571,4 @@ while True:
             print("Shutting down assistant...")
             break
 
-        parse_input(command)'''
+        parse_input(command)
