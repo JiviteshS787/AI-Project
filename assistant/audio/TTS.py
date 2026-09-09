@@ -12,6 +12,7 @@ def speak(text, voice_id="KLON7Nwan8mJxpF2R8Yw", model_id="eleven_v3"):
     )
     return audio
 
-# Example
-audio = speak("It's currently 12 degrees and cloudy in Ottawa, I would grab a jacket for later.")
-play(audio)
+def play_audio(command):
+    audio = speak(command)
+    play(audio)
+    return

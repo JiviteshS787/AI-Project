@@ -14,6 +14,8 @@ from assistant.external_connectors.news_handler import handle_news
 from assistant.external_connectors.weather_handler import handle_weather
 from assistant.external_connectors.web_search import search
 
+from assistant.audio.TTS import play_audio
+
 
 
 def execute(function, skip_confirm=False): #function is a JSON obj, action and target are the attributes of said obj
@@ -232,7 +234,8 @@ def execute(function, skip_confirm=False): #function is a JSON obj, action and t
             print("Web search")
             answer = search(routed)
             print(answer)
-        return answer
+
+        play_audio(answer)
 
 
     else:
