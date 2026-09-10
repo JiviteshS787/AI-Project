@@ -31,6 +31,8 @@ from assistant.external_clients.daily_briefing import generate_briefing
 
 from assistant.brain.brain_groq_json import KEY_NAME
 
+from assistant.external_clients.token_refresher import start_background_refresher
+
 SERVER_START_TIME = time.time()
 
 
@@ -61,6 +63,8 @@ async def lifespan(app: FastAPI):
     state["last_interpretation"] = None
     state["last_alias_update"] = None
     state["active_key"] = KEY_NAME
+
+    start_background_refresher()
 
     task = asyncio.create_task(periodic_stats_refresh())
 
@@ -312,7 +316,16 @@ def briefing_view(secret: str = ""):
     try:
         summary_markdown = generate_briefing()
     except Exception as e:
-        summary_markdown = f"Briefing generation failed: {e}"
+        err_str = str(e)
+        if "invalid_grant" in err_str:
+            summary_markdown = (
+                "**Google authentication expired.**\n\n"
+                "The refresh token is no longer valid and needs to be renewed manually "
+                "by running:\n\n`python -m assistant.external_clients.token_refresher --interactive`\n\n"
+                f"_Raw error: {err_str}_"
+            )
+        else:
+            summary_markdown = f"Briefing generation failed: {err_str}"
 
     summary_markdown = _normalize_markdown(summary_markdown)
     safe_json = json.dumps(summary_markdown)   

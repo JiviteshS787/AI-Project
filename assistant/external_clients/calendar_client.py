@@ -6,6 +6,8 @@ from googleapiclient.discovery import build
 import os
 
 TOKEN_PATH = "data/google_token.json"
+CREDENTIALS_PATH = "data/credentials.json"
+
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/calendar.readonly"
@@ -13,12 +15,21 @@ SCOPES = [
 
 
 def get_calendar_service():
-    creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+    creds = None
 
-    if not creds.valid and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-        with open(TOKEN_PATH, "w") as f:
-            f.write(creds.to_json())
+    if os.path.exists(TOKEN_PATH):
+        creds = Credentials.from_authorized_user_file(TOKEN_PATH, SCOPES)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            from google_auth_oauthlib.flow import InstalledAppFlow
+            flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
+            creds = flow.run_local_server(port=0)
+
+        with open(TOKEN_PATH, "w") as token_file:
+            token_file.write(creds.to_json())
 
     return build("calendar", "v3", credentials=creds)
 
@@ -61,7 +72,7 @@ def fetch_todays_events():
 
     return parsed_events
 
-
+ 
 if __name__ == "__main__":
     events = fetch_todays_events()
     for e in events:

@@ -13,23 +13,7 @@ ACKS = {
         "Right away, sir.",
         "Certainly.",
         "Working on it.",
-    ],
-    "restart": [
-        "[professionally] Restarting now.",
-        "See you in a minute.",
-    ],
-    "shutdown": [
-        "[professionally] Shutting down. Goodbye, sir.",
-        "Goodbye, sir.",
-    ],
-    "sleep": [
-        "Putting the system to sleep. See you later, sir.",
-        "[calmly] Entering sleep mode.",
-    ],
-    "lock": [
-        "[professionally] Alright, locking up, sir.",
-        "Locking the system, sir.",
-    ],
+    ]
 }
 
 BASE_DIR = os.path.join(os.path.dirname(__file__), "acks")

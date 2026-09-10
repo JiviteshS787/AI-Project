@@ -8,15 +8,6 @@ from assistant.system_tools.window import focus_window, minimize_window, maximiz
 from assistant.system_tools.power import sleep_system, lock_system, restart_system, shutdown_system
 from assistant.system_tools.clipboard import get_clipboard, set_clipboard, clear_clipboard
 
-from assistant.brain.web_search_handler import classify_query
-
-from assistant.external_connectors.news_handler import handle_news
-from assistant.external_connectors.weather_handler import handle_weather
-from assistant.external_connectors.web_search import search
-
-from assistant.audio.TTS import play_audio
-
-
 
 def execute(function, skip_confirm=False): #function is a JSON obj, action and target are the attributes of said obj
     '''
@@ -215,27 +206,7 @@ def execute(function, skip_confirm=False): #function is a JSON obj, action and t
     #             Web Search              #
     #######################################
     elif action == "search":
-        parameters = function["parameters"] or {}
-        routed = classify_query(parameters.get("query"))  # calls 120b
-        print(f"Interpreted: {routed}")
-        sub_action = routed["action"]
-        sub_params = routed["parameters"]
-        answer = ""
-
-        if sub_action == "weather":
-            print("Weather")
-            answer = handle_weather(sub_params.get("location"))
-            print(answer)
-        elif sub_action == "news":
-            print("News")
-            answer = handle_news(sub_params.get("topic"))
-            print(answer)
-        elif sub_action == "general_search":
-            print("Web search")
-            answer = search(routed)
-            print(answer)
-
-        play_audio(answer)
+        pass
 
 
     else:
