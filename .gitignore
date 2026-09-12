@@ -239,3 +239,5 @@ migrate_history.py
 deepseek_test_log.txt
 
 server_log.txt
+
+clipboard_helper_log.txt

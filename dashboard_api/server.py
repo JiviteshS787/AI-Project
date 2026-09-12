@@ -601,7 +601,7 @@ async def remote_command(payload: dict = Body(...)):
         "parameters": payload.get("parameters") or {},
     }
 
-    #print(f"{function}")
+    print(f"{function}")
 
     push_state_update("last_input", {"last_input": f"[Remote] {action.replace('_', ' ')}"})
     time.sleep(0.4)
