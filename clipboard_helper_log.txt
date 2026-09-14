@@ -1,0 +1,18 @@
+^CTraceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\jivit\AI_Project\AI-Project\assistant\system_tools\clipboard_helper.py", line 22, in <module>
+    main()
+  File "C:\Users\jivit\AI_Project\AI-Project\assistant\system_tools\clipboard_helper.py", line 15, in main
+    pyperclip.copy(text)
+  File "C:\Users\jivit\AI_Project\AI-Project\venv\Lib\site-packages\pyperclip\__init__.py", line 622, in lazy_load_stub_copy
+    return copy(text)
+           ^^^^^^^^^^
+  File "C:\Users\jivit\AI_Project\AI-Project\venv\Lib\site-packages\pyperclip\__init__.py", line 430, in copy_windows
+    with clipboard(hwnd):
+  File "C:\Users\jivit\AppData\Local\Programs\Python\Python311\Lib\contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "C:\Users\jivit\AI_Project\AI-Project\venv\Lib\site-packages\pyperclip\__init__.py", line 411, in clipboard
+    raise PyperclipWindowsException("Error calling OpenClipboard")
+pyperclip.PyperclipWindowsException: Error calling OpenClipboard ([WinError 0] The operation completed successfully.)
